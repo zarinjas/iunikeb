@@ -23,13 +23,13 @@ class DatabaseSeeder extends Seeder
         $this->call(CooperativeSettingsSeeder::class);
 
         $cooperativeId = Cooperative::query()
-            ->where('slug', 'koperasi-demo-berhad')
+            ->where('slug', 'koperasi-unikeb')
             ->value('id');
 
         $password = Hash::make('password');
 
         $superAdmin = User::query()->updateOrCreate([
-            'email' => 'superadmin@koperasihub.test',
+            'email' => 'superadmin@iunikeb.com.my',
         ], [
             'name' => 'Super Admin Demo',
             'cooperative_id' => $cooperativeId,
@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         $superAdmin->syncRoles([AccessControl::ROLE_SUPER_ADMIN]);
 
         $admin = User::query()->updateOrCreate([
-            'email' => 'admin@koperasihub.test',
+            'email' => 'admin@iunikeb.com.my',
         ], [
             'name' => 'Pentadbir Demo',
             'cooperative_id' => $cooperativeId,
@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
         $admin->syncRoles([AccessControl::ROLE_ADMIN]);
 
         $member = User::query()->updateOrCreate([
-            'email' => 'member@koperasihub.test',
+            'email' => 'member@iunikeb.com.my',
         ], [
             'name' => 'Ahli Demo',
             'cooperative_id' => $cooperativeId,

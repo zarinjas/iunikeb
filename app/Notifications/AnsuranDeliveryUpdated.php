@@ -34,7 +34,7 @@ class AnsuranDeliveryUpdated extends Notification implements ShouldQueue
                 ->line($template['body'])
                 ->action('Semak Status', route('member.ansuran.applications.show', $this->application))
                 ->salutation('Terima kasih.')
-                ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+                ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
         }
 
         $deliveryLabel = AnsuranDeliveryStatus::tryFrom($this->application->delivery_status)?->label() ?? $this->application->delivery_status;
@@ -51,7 +51,7 @@ class AnsuranDeliveryUpdated extends Notification implements ShouldQueue
             })
             ->action('Semak Status', route('member.ansuran.applications.show', $this->application))
             ->salutation('Terima kasih.')
-            ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+            ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
     }
 
     public function toDatabase(object $notifiable): array

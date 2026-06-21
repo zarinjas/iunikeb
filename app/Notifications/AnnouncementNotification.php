@@ -47,7 +47,7 @@ class AnnouncementNotification extends Notification
                 ->line($template['body'])
                 ->action('Lihat Pengumuman', $announcementUrl)
                 ->salutation('Terima kasih.')
-                ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+                ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
         }
 
         return (new MailMessage)
@@ -56,7 +56,7 @@ class AnnouncementNotification extends Notification
             ->line($this->announcement->summary ?? strip_tags((string) $this->announcement->content))
             ->action('Lihat Pengumuman', $announcementUrl)
             ->salutation('Terima kasih.')
-            ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+            ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
     }
 
     public function toDatabase(object $notifiable): array

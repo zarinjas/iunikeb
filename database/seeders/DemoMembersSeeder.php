@@ -14,16 +14,16 @@ class DemoMembersSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
         if (! $cooperative) {
             return;
         }
 
-        $admin = User::query()->where('email', 'admin@koperasihub.test')->first();
+        $admin = User::query()->where('email', 'admin@iunikeb.com.my')->first();
         $password = Hash::make('password');
 
         for ($i = 1; $i <= 30; $i++) {
-            $email = 'member'.str_pad($i, 2, '0', STR_PAD_LEFT).'@koperasihub.test';
+            $email = 'member'.str_pad($i, 2, '0', STR_PAD_LEFT).'@iunikeb.com.my';
 
             if (User::query()->where('email', $email)->exists()) {
                 continue;

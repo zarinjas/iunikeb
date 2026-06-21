@@ -14,9 +14,9 @@ class CmsDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->firstOrFail();
-        $authorId = User::query()->where('email', 'admin@koperasihub.test')->value('id')
-            ?? User::query()->where('email', 'superadmin@koperasihub.test')->value('id');
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->firstOrFail();
+        $authorId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id')
+            ?? User::query()->where('email', 'superadmin@iunikeb.com.my')->value('id');
 
         $homepage = Page::query()->updateOrCreate([
             'cooperative_id' => $cooperative->id,
@@ -26,7 +26,7 @@ class CmsDemoSeeder extends Seeder
             'template' => PageTemplate::Homepage->value,
             'summary' => 'Laman utama demo untuk kandungan CMS koperasi.',
             'status' => PageStatus::Published->value,
-            'meta_title' => 'Koperasi Demo Berhad',
+            'meta_title' => 'Koperasi Unikeb',
             'meta_description' => 'Akses maklumat keanggotaan, perkhidmatan, pengumuman dan borang koperasi dalam satu laman rasmi demo.',
             'featured_image_path' => null,
             'published_at' => now(),
@@ -39,7 +39,7 @@ class CmsDemoSeeder extends Seeder
                 'type' => PageSectionType::Hero->value,
                 'name' => 'Hero Utama',
                 'data' => [
-                    'badge' => 'Koperasi Demo Berhad',
+                    'badge' => 'Koperasi Unikeb',
                     'title' => 'Koperasi moden untuk keperluan anggota',
                     'subtitle' => 'Akses maklumat keanggotaan, perkhidmatan, pengumuman dan borang koperasi melalui satu laman rasmi yang mudah digunakan.',
                     'primary_button_text' => 'Mohon Jadi Ahli',

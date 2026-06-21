@@ -11,13 +11,13 @@ class PopupDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
 
         if (! $cooperative) {
             return;
         }
 
-        $superAdmin = User::query()->where('email', 'superadmin@koperasihub.test')->first();
+        $superAdmin = User::query()->where('email', 'superadmin@iunikeb.com.my')->first();
 
         Popup::query()->create([
             'cooperative_id' => $cooperative->id,
@@ -35,7 +35,7 @@ class PopupDemoSeeder extends Seeder
         Popup::query()->create([
             'cooperative_id' => $cooperative->id,
             'title' => 'Mesyuarat Agung Tahunan',
-            'content' => "Mesyuarat Agung Tahunan (MAT) Koperasi Demo Berhad akan diadakan pada:\n\nTarikh: 15 Julai 2026 (Rabu)\nMasa: 9:00 pagi - 1:00 petang\nTempat: Dewan Serbaguna Koperasi\n\nKehadiran semua ahli adalah diwajibkan.",
+            'content' => "Mesyuarat Agung Tahunan (MAT) Koperasi Unikeb akan diadakan pada:\n\nTarikh: 15 Julai 2026 (Rabu)\nMasa: 9:00 pagi - 1:00 petang\nTempat: Dewan Serbaguna Koperasi\n\nKehadiran semua ahli adalah diwajibkan.",
             'button_text' => 'Lihat Agenda',
             'button_url' => 'https://koperasihub.test/agenda',
             'is_active' => true,

@@ -18,7 +18,7 @@ class AnsuranMudahDemoSeeder extends Seeder
         $cooperative = Cooperative::first();
         if (! $cooperative) {
             $cooperative = Cooperative::create([
-                'name' => 'Koperasi Demo Berhad',
+                'name' => 'Koperasi Unikeb',
                 'short_name' => 'KDemo',
                 'registration_no' => 'KO-2025-0001',
                 'slug' => 'koperasi-demo',
@@ -182,7 +182,7 @@ class AnsuranMudahDemoSeeder extends Seeder
 
 <p>Perjanjian ini dibuat pada <strong>{{tarikh_kontrak}}</strong> antara:</p>
 
-<p><strong>PIHAK PERTAMA:</strong> Koperasi Demo Berhad</p>
+<p><strong>PIHAK PERTAMA:</strong> Koperasi Unikeb</p>
 <p><strong>PIHAK KEDUA:</strong> {{nama_ahli}} (No KP: {{no_kad_pengenalan}})</p>
 
 <hr>

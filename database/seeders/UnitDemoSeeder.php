@@ -11,13 +11,13 @@ class UnitDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
 
         if (! $cooperative) {
             return;
         }
 
-        $superAdminId = User::query()->where('email', 'superadmin@koperasihub.test')->value('id');
+        $superAdminId = User::query()->where('email', 'superadmin@iunikeb.com.my')->value('id');
 
         $units = [
             ['name' => 'Unit Peruncitan'],

@@ -13,9 +13,9 @@ class AnnouncementDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->firstOrFail();
-        $authorId = User::query()->where('email', 'admin@koperasihub.test')->value('id')
-            ?? User::query()->where('email', 'superadmin@koperasihub.test')->value('id');
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->firstOrFail();
+        $authorId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id')
+            ?? User::query()->where('email', 'superadmin@iunikeb.com.my')->value('id');
 
         $items = [
             [

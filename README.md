@@ -1,4 +1,4 @@
-# KoperasiHub
+# Koperasi Unikeb
 
 KoperasiHub is a white-label cooperative management platform built with Laravel, Vue 3, Inertia.js, Tailwind CSS, and shadcn-vue.
 
@@ -38,6 +38,6 @@ http://127.0.0.1:8000/member
 Use these seeded accounts after `php artisan migrate:fresh --seed`:
 
 ```txt
-admin@koperasihub.test / password
-member@koperasihub.test / password
+admin@iunikeb.com.my / password
+member@iunikeb.com.my / password
 ```

@@ -17,11 +17,11 @@ class SeedDemoUsers extends Command
     public function handle(): void
     {
         $cooperativeId = Cooperative::query()
-            ->where('slug', 'koperasi-demo-berhad')
+            ->where('slug', 'koperasi-unikeb')
             ->value('id');
 
         if (! $cooperativeId) {
-            $this->warn('Cooperative "koperasi-demo-berhad" tidak dijumpai.');
+            $this->warn('Cooperative "koperasi-unikeb" tidak dijumpai.');
             return;
         }
 
@@ -29,19 +29,19 @@ class SeedDemoUsers extends Command
 
         $users = [
             [
-                'email' => 'superadmin@koperasihub.test',
+                'email' => 'superadmin@iunikeb.com.my',
                 'name' => 'Super Admin Demo',
                 'role' => AccessControl::ROLE_SUPER_ADMIN,
                 'user_type' => AccessControl::ROLE_SUPER_ADMIN,
             ],
             [
-                'email' => 'admin@koperasihub.test',
+                'email' => 'admin@iunikeb.com.my',
                 'name' => 'Pentadbir Demo',
                 'role' => User::ROLE_ADMIN,
                 'user_type' => User::ROLE_ADMIN,
             ],
             [
-                'email' => 'member@koperasihub.test',
+                'email' => 'member@iunikeb.com.my',
                 'name' => 'Ahli Demo',
                 'role' => User::ROLE_MEMBER,
                 'user_type' => User::ROLE_MEMBER,

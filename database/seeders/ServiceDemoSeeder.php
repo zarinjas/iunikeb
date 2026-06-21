@@ -12,9 +12,9 @@ class ServiceDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->firstOrFail();
-        $authorId = User::query()->where('email', 'admin@koperasihub.test')->value('id')
-            ?? User::query()->where('email', 'superadmin@koperasihub.test')->value('id');
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->firstOrFail();
+        $authorId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id')
+            ?? User::query()->where('email', 'superadmin@iunikeb.com.my')->value('id');
 
         $services = [
             ['title' => 'Keanggotaan', 'category' => 'membership', 'icon' => 'Users'],
@@ -62,7 +62,7 @@ class ServiceDemoSeeder extends Seeder
                 'button_url' => '/hubungi',
                 'contact_name' => 'Unit Perkhidmatan',
                 'contact_phone' => '+603-0000 0000',
-                'contact_email' => 'info@koperasidemo.test',
+                'contact_email' => 'info@iunikeb.com.my',
                 'whatsapp' => '+6012-000 0000',
                 'created_by' => $authorId,
                 'updated_by' => $authorId,

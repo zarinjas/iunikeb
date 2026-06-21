@@ -14,14 +14,14 @@ class ComplaintDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
 
         if (! $cooperative) {
             return;
         }
 
-        $admin = User::query()->where('email', 'admin@koperasihub.test')->first();
-        $memberUser = User::query()->where('email', 'member@koperasihub.test')->first();
+        $admin = User::query()->where('email', 'admin@iunikeb.com.my')->first();
+        $memberUser = User::query()->where('email', 'member@iunikeb.com.my')->first();
         $member = Member::query()->where('cooperative_id', $cooperative->id)->where('user_id', $memberUser?->id)->first();
 
         if (! $admin || ! $memberUser) {

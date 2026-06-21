@@ -12,7 +12,7 @@ class CarumanDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
 
         if (! $cooperative) {
             return;
@@ -30,7 +30,7 @@ class CarumanDemoSeeder extends Seeder
 
         $memberIds = $members->pluck('id')->values()->all();
 
-        $adminId = User::query()->where('email', 'admin@koperasihub.test')->value('id');
+        $adminId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id');
 
         $data = [
             ['member_id' => $memberIds[0], 'year' => 2024, 'caruman_semasa' => 3600.00, 'caruman_keseluruhan' => 28800.00, 'dividen' => 1200.00],

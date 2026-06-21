@@ -13,13 +13,13 @@ class PosterDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
 
         if (! $cooperative) {
             return;
         }
 
-        $superAdmin = User::query()->where('email', 'superadmin@koperasihub.test')->first();
+        $superAdmin = User::query()->where('email', 'superadmin@iunikeb.com.my')->first();
 
         $posters = [
             [

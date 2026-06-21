@@ -15,12 +15,12 @@ class MemberDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
         if (! $cooperative) {
             return;
         }
 
-        $adminId = User::query()->where('email', 'admin@koperasihub.test')->value('id');
+        $adminId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id');
         $password = Hash::make('password');
 
         Storage::disk('public')->makeDirectory('member-photos');
@@ -38,7 +38,7 @@ class MemberDemoSeeder extends Seeder
                 'member_no' => '8847',
                 'full_name' => 'Ahli Demo',
                 'identity_no' => '920207146739',
-                'email' => 'member@koperasihub.test',
+                'email' => 'member@iunikeb.com.my',
                 'phone' => '0129929195',
                 'address_line_1' => 'E-05-03 Blok E Residensi Zamrud, Jalan Zamrud Utama, Sg Tangkas',
                 'city' => 'Kajang',
@@ -67,13 +67,13 @@ class MemberDemoSeeder extends Seeder
                 'spouse_address' => null,
                 'membership_status' => MemberStatus::Active->value,
                 'joined_at' => '2025-03-06',
-                'user_email' => 'member@koperasihub.test',
+                'user_email' => 'member@iunikeb.com.my',
             ],
             [
                 'member_no' => '8848',
                 'full_name' => 'Siti Aisyah Binti Mohd Nor',
                 'identity_no' => '880712085432',
-                'email' => 'aisyah@koperasihub.test',
+                'email' => 'aisyah@iunikeb.com.my',
                 'phone' => '0134567890',
                 'address_line_1' => 'No. 15, Jalan Universiti, Seksyen 16',
                 'city' => 'Bangi',
@@ -102,13 +102,13 @@ class MemberDemoSeeder extends Seeder
                 'spouse_address' => 'No. 8, Jalan Sains, Taman Teknologi, 43600 Bangi, Selangor',
                 'membership_status' => MemberStatus::Active->value,
                 'joined_at' => '2025-06-15',
-                'user_email' => 'aisyah@koperasihub.test',
+                'user_email' => 'aisyah@iunikeb.com.my',
             ],
             [
                 'member_no' => '8849',
                 'full_name' => 'Ahmad Faiz Bin Ismail',
                 'identity_no' => '900305087654',
-                'email' => 'faiz@koperasihub.test',
+                'email' => 'faiz@iunikeb.com.my',
                 'phone' => '0198765432',
                 'address_line_1' => 'No. 8, Jalan Sains, Taman Teknologi',
                 'city' => 'Bangi',
@@ -137,7 +137,7 @@ class MemberDemoSeeder extends Seeder
                 'spouse_address' => null,
                 'membership_status' => MemberStatus::Active->value,
                 'joined_at' => '2025-09-01',
-                'user_email' => 'faiz@koperasihub.test',
+                'user_email' => 'faiz@iunikeb.com.my',
             ],
             [
                 'member_no' => '8850',

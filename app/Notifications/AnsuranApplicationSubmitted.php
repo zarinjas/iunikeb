@@ -33,7 +33,7 @@ class AnsuranApplicationSubmitted extends Notification implements ShouldQueue
                 ->line($template['body'])
                 ->action('Semak Permohonan', route('admin.ansuran.applications.show', $this->application))
                 ->salutation('Terima kasih.')
-                ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+                ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
         }
 
         return (new MailMessage)
@@ -46,7 +46,7 @@ class AnsuranApplicationSubmitted extends Notification implements ShouldQueue
             ->line('Jumlah: RM '.number_format($this->application->full_price, 2))
             ->action('Semak Permohonan', route('admin.ansuran.applications.show', $this->application))
             ->salutation('Terima kasih.')
-            ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+            ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
     }
 
     public function toDatabase(object $notifiable): array

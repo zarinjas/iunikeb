@@ -15,9 +15,9 @@ class DocumentsDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
-        $admin = User::query()->where('email', 'admin@koperasihub.test')->first()
-            ?? User::query()->where('email', 'superadmin@koperasihub.test')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
+        $admin = User::query()->where('email', 'admin@iunikeb.com.my')->first()
+            ?? User::query()->where('email', 'superadmin@iunikeb.com.my')->first();
 
         if (! $cooperative || ! $admin) {
             return;

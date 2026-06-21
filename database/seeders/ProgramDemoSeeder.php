@@ -16,13 +16,13 @@ class ProgramDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
 
         if (! $cooperative) {
             return;
         }
 
-        $adminId = User::query()->where('email', 'admin@koperasihub.test')->value('id');
+        $adminId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id');
         $memberUserIds = Member::query()
             ->where('cooperative_id', $cooperative->id)
             ->where('membership_status', 'active')
@@ -39,7 +39,7 @@ class ProgramDemoSeeder extends Seeder
                 'start_date' => now()->addMonths(2),
                 'end_date' => now()->addMonths(2)->addHours(5),
                 'registration_deadline' => now()->addMonths(2)->subWeek(),
-                'description' => "Mesyuarat Agung Tahunan (MAT) Koperasi Demo Berhad bagi tahun kewangan 2025.\n\nAntara agenda:\n- Pembentangan Laporan Tahunan\n- Pengesahan Penyata Kewangan\n- Pelantikan Juruaudit\n- Pembahagian Dividen\n- Pemilihan Ahli Lembaga",
+                'description' => "Mesyuarat Agung Tahunan (MAT) Koperasi Unikeb bagi tahun kewangan 2025.\n\nAntara agenda:\n- Pembentangan Laporan Tahunan\n- Pengesahan Penyata Kewangan\n- Pelantikan Juruaudit\n- Pembahagian Dividen\n- Pemilihan Ahli Lembaga",
                 'status' => ProgramStatus::Published->value,
                 'is_featured' => true,
             ],
@@ -71,7 +71,7 @@ class ProgramDemoSeeder extends Seeder
                 'is_featured' => false,
             ],
             [
-                'title' => 'Hari Keluarga Koperasi Demo Berhad',
+                'title' => 'Hari Keluarga Koperasi Unikeb',
                 'category' => 'community',
                 'program_type' => 'physical',
                 'location' => 'Taman Botani Shah Alam',
@@ -130,7 +130,7 @@ class ProgramDemoSeeder extends Seeder
                 'capacity' => 280,
                 'start_date' => now()->subMonths(6),
                 'end_date' => now()->subMonths(6)->addHours(5),
-                'description' => "Mesyuarat Agung Tahunan (MAT) Koperasi Demo Berhad bagi tahun kewangan 2024. (Acara lepas)",
+                'description' => "Mesyuarat Agung Tahunan (MAT) Koperasi Unikeb bagi tahun kewangan 2024. (Acara lepas)",
                 'status' => ProgramStatus::Completed->value,
                 'is_featured' => false,
             ],

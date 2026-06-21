@@ -33,7 +33,7 @@ class AnsuranGuarantorsApproved extends Notification implements ShouldQueue
                 ->line($template['body'])
                 ->action('Semak Status', route('member.ansuran.applications.show', $this->application))
                 ->salutation('Terima kasih.')
-                ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+                ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
         }
 
         return (new MailMessage)
@@ -45,7 +45,7 @@ class AnsuranGuarantorsApproved extends Notification implements ShouldQueue
             ->line('Permohonan anda kini dalam proses semakan pihak Koperasi.')
             ->action('Semak Status', route('member.ansuran.applications.show', $this->application))
             ->salutation('Terima kasih.')
-            ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+            ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
     }
 
     public function toDatabase(object $notifiable): array

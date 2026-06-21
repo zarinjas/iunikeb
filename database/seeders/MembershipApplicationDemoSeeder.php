@@ -12,8 +12,8 @@ class MembershipApplicationDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $cooperative = Cooperative::query()->where('slug', 'koperasi-demo-berhad')->first();
-        $reviewerId = User::query()->where('email', 'admin@koperasihub.test')->value('id');
+        $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
+        $reviewerId = User::query()->where('email', 'admin@iunikeb.com.my')->value('id');
 
         if (! $cooperative) {
             return;
@@ -55,7 +55,7 @@ class MembershipApplicationDemoSeeder extends Seeder
             'application_no' => 'APP-'.now()->format('Ymd').'-0003',
             'full_name' => 'Ahli Demo',
             'identity_no' => '910101105555',
-            'email' => 'member@koperasihub.test',
+            'email' => 'member@iunikeb.com.my',
             'phone' => '0121111111',
             'reviewed_by' => $reviewerId,
             'review_notes' => 'Permohonan diluluskan selepas semakan dokumen lengkap.',

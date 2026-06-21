@@ -33,7 +33,7 @@ class ReferralCommissionPaid extends Notification implements ShouldQueue
                 ->line($template['body'])
                 ->action('Lihat Rujukan Saya', route('member.referrals.index'))
                 ->salutation('Terima kasih.')
-                ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+                ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
         }
 
         $amount = number_format($this->commission->commission_amount, 2);
@@ -45,7 +45,7 @@ class ReferralCommissionPaid extends Notification implements ShouldQueue
             ->line("Komisyen rujukan sebanyak RM{$amount} kerana memperkenalkan {$referredName} telah dibayar ke akaun bank anda.")
             ->action('Lihat Rujukan Saya', route('member.referrals.index'))
             ->salutation('Terima kasih.')
-            ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+            ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
     }
 
     public function toDatabase(object $notifiable): array

@@ -30,7 +30,7 @@ class FinancingGuarantorRequest extends Notification
                 ->line($template['body'])
                 ->action('Semak Permintaan', route('member.financing.guarantor-requests.index'))
                 ->salutation('Terima kasih.')
-                ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+                ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
         }
 
         $applicantName = $this->application->member?->user?->name ?? $this->application->member?->full_name ?? 'Pemohon';
@@ -45,7 +45,7 @@ class FinancingGuarantorRequest extends Notification
             ->line('Jumlah: RM '.number_format((float) $this->application->amount_requested, 2))
             ->action('Semak Permintaan', route('member.financing.guarantor-requests.index'))
             ->salutation('Terima kasih.')
-            ->line('E-mel ini dijana secara automatik oleh sistem KoperasiHub.');
+            ->line('E-mel ini dijana secara automatik oleh sistem '.config('app.name').'.');
     }
 
     public function toDatabase(object $notifiable): array

@@ -11,10 +11,10 @@ class CooperativeSettingsSeeder extends Seeder
     public function run(): void
     {
         $cooperative = Cooperative::query()->updateOrCreate([
-            'slug' => 'koperasi-demo-berhad',
+            'slug' => 'koperasi-unikeb',
         ], [
-            'name' => 'Koperasi Demo Berhad',
-            'short_name' => 'Koperasi Demo',
+            'name' => 'Koperasi Unikeb',
+            'short_name' => 'Unikeb',
             'registration_no' => 'D-0-0000',
             'logo_path' => null,
             'primary_color' => '#0F766E',
@@ -26,20 +26,20 @@ class CooperativeSettingsSeeder extends Seeder
             'postcode' => '50450',
             'country' => 'Malaysia',
             'phone' => '+603-1234 5678',
-            'email' => 'hello@koperasidemo.test',
+            'email' => 'hello@iunikeb.com.my',
             'whatsapp' => '+6012-345 6789',
-            'website_url' => 'https://koperasidemo.test',
-            'facebook_url' => 'https://facebook.com/koperasidemo',
-            'instagram_url' => 'https://instagram.com/koperasidemo',
-            'linkedin_url' => 'https://linkedin.com/company/koperasidemo',
+            'website_url' => 'https://iunikeb.com.my',
+            'facebook_url' => null,
+            'instagram_url' => null,
+            'linkedin_url' => null,
             'footer_text' => 'Platform demo untuk pengurusan koperasi.',
             'status' => 'active',
         ]);
 
         app(SettingsService::class)->update($cooperative, [
             'brand' => [
-                'name' => 'Koperasi Demo Berhad',
-                'short_name' => 'Koperasi Demo',
+                'name' => 'Koperasi Unikeb',
+                'short_name' => 'Unikeb',
                 'registration_no' => 'D-0-0000',
                 'logo_path' => null,
                 'primary_color' => '#0F766E',
@@ -53,17 +53,17 @@ class CooperativeSettingsSeeder extends Seeder
                 'postcode' => '50450',
                 'country' => 'Malaysia',
                 'phone' => '+603-1234 5678',
-                'email' => 'hello@koperasidemo.test',
+                'email' => 'hello@iunikeb.com.my',
                 'whatsapp' => '+6012-345 6789',
-                'website_url' => 'https://koperasidemo.test',
+                'website_url' => 'https://iunikeb.com.my',
             ],
             'social' => [
-                'facebook_url' => 'https://facebook.com/koperasidemo',
-                'instagram_url' => 'https://instagram.com/koperasidemo',
-                'linkedin_url' => 'https://linkedin.com/company/koperasidemo',
+                'facebook_url' => null,
+                'instagram_url' => null,
+                'linkedin_url' => null,
             ],
             'seo' => [
-                'meta_title' => 'Koperasi Demo Berhad',
+                'meta_title' => 'Koperasi Unikeb',
                 'meta_description' => 'Laman demo untuk platform pengurusan koperasi putih label.',
             ],
             'system' => [

@@ -18,11 +18,11 @@ class OnlineFormDemoSeeder extends Seeder
     public function run(): void
     {
         $cooperativeId = Cooperative::query()
-            ->where('slug', 'koperasi-demo-berhad')
+            ->where('slug', 'koperasi-unikeb')
             ->value('id');
 
         $adminId = User::query()
-            ->where('email', 'admin@koperasihub.test')
+            ->where('email', 'admin@iunikeb.com.my')
             ->value('id');
 
         $categories = collect([
