@@ -20,12 +20,23 @@ ssh "$VPS_HOST" << EOF
   echo "--- Bersihkan hot file ---"
   rm -f public/hot
 
+  echo "--- Backup database ---"
+  cp database/database.sqlite database/database.sqlite.bak 2>/dev/null || true
+
   echo "--- Sync dengan GitHub (reset-hard) ---"
   git merge --abort 2>/dev/null || true
   git stash push -m "auto-stash-sebelum-deploy" 2>/dev/null || true
   git fetch origin $BRANCH
   git reset --hard origin/$BRANCH
   git stash pop 2>/dev/null || true
+
+  echo "--- Pulihkan database jika backup ada ---"
+  if [ -f database/database.sqlite.bak ] && [ ! -s database/database.sqlite ]; then
+    mv database/database.sqlite.bak database/database.sqlite
+    echo "  Database dipulihkan dari backup."
+  else
+    rm -f database/database.sqlite.bak
+  fi
 
   echo "--- Install PHP deps ---"
   composer install --no-dev --optimize-autoloader 2>/dev/null || true
@@ -35,6 +46,11 @@ ssh "$VPS_HOST" << EOF
 
   echo "--- Migration ---"
   php artisan migrate --force
+
+  echo "--- Seed data asas ---"
+  php artisan db:seed --class=RolePermissionSeeder --force 2>/dev/null || true
+  php artisan db:seed --class=CooperativeSettingsSeeder --force 2>/dev/null || true
+  php artisan demo:seed-users 2>/dev/null || true
 
   echo "--- Cache ---"
   php artisan optimize:clear
