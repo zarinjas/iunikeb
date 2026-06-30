@@ -20,8 +20,10 @@ ssh "$VPS_HOST" << EOF
   echo "--- Bersihkan hot file ---"
   rm -f public/hot
 
-  echo "--- Git pull ---"
+  echo "--- Git stash & pull ---"
+  git stash push -m "auto-stash-sebelum-deploy" 2>/dev/null || true
   git pull origin $BRANCH
+  git stash pop 2>/dev/null || true
 
   echo "--- Install PHP deps ---"
   composer install --no-dev --optimize-autoloader 2>/dev/null || true
