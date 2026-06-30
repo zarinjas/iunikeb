@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Building2, Calculator, CalendarCheck, CalendarDays, ChevronDown, CreditCard, FileCheck, FileText, Files, HandCoins, Home, ImagePlay, LogOut, Megaphone, Menu, MessagesSquare, ShoppingCart, Wallet, UserRound, X } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import BottomTabBar from '@/Shared/Components/BottomTabBar.vue';
 import KoperasiAIChat from '@/Member/Components/KoperasiAIChat.vue';
 import MemberPopup from '@/Shared/Components/MemberPopup.vue';
@@ -37,9 +37,25 @@ const icons = {
     UserRound,
 };
 
+const itemTone = (label) => ({
+    'Papan Pemuka': 'bg-blue-50 text-blue-600',
+    'Kad Digital': 'bg-violet-50 text-violet-600',
+    'Profil Saya': 'bg-cyan-50 text-cyan-600',
+    Pembiayaan: 'bg-emerald-50 text-emerald-600',
+    'Kalkulator Pembiayaan': 'bg-sky-50 text-sky-600',
+    'Ansuran Mudah': 'bg-orange-50 text-orange-600',
+    Program: 'bg-pink-50 text-pink-600',
+    'Kehadiran Saya': 'bg-amber-50 text-amber-600',
+    'Borang Online': 'bg-indigo-50 text-indigo-600',
+    Aduan: 'bg-rose-50 text-rose-600',
+    'Rujukan Saya': 'bg-lime-50 text-lime-700',
+    'Caruman Saya': 'bg-teal-50 text-teal-600',
+}[label] ?? 'bg-slate-100 text-slate-600');
+
 const expandedMenus = ref(new Set());
 
-const isActive = (href) => href && currentUrl.value === new URL(href, window.location.origin).pathname;
+const currentPath = computed(() => currentUrl.value.split('?')[0]);
+const isActive = (href) => href && currentPath.value === new URL(href, window.location.origin).pathname;
 
 const isChildActive = (children) => children?.some((c) => isActive(c.href));
 
@@ -50,6 +66,11 @@ const toggleMenu = (label) => {
         expandedMenus.value.add(label);
     }
 };
+
+watch(currentPath, () => {
+    const activeParent = navItems.value.find((item) => item.children?.length && isChildActive(item.children));
+    if (activeParent) expandedMenus.value = new Set([...expandedMenus.value, activeParent.label]);
+}, { immediate: true });
 
 const pageTitle = computed(() => {
     const titles = {
@@ -104,7 +125,7 @@ const logout = () => {
 
     <div class="relative min-h-screen bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
         <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-y-auto border-r border-slate-200 bg-white lg:block">
-            <div class="flex h-16 items-center gap-3 border-b border-slate-200 px-6">
+            <div class="flex h-16 items-center gap-3 border-b border-teal-100 bg-gradient-to-r from-teal-50 via-cyan-50/60 to-blue-50 px-6">
                 <Link href="/member/dashboard" class="flex items-center gap-3 font-semibold">
                     <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">
                         <img :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
@@ -126,10 +147,10 @@ const logout = () => {
                         <button
                             type="button"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-                            :class="isChildActive(item.children) ? 'bg-teal-50 text-teal-800' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
+                            :class="isChildActive(item.children) ? 'bg-gradient-to-r from-teal-100/80 to-cyan-50 text-teal-900 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
                             @click="toggleMenu(item.label)"
                         >
-                            <component :is="icons[item.icon] ?? Home" class="h-4 w-4 shrink-0" />
+                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" :class="itemTone(item.label)"><component :is="icons[item.icon] ?? Home" class="h-4 w-4" /></span>
                             <span class="flex-1 text-left">{{ item.label }}</span>
                             <ChevronDown
                                 class="h-4 w-4 transition-transform"
@@ -153,9 +174,9 @@ const logout = () => {
                         v-else
                         :href="item.href"
                         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-                        :class="isActive(item.href) ? 'bg-teal-50 text-teal-800' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
+                        :class="isActive(item.href) ? 'bg-gradient-to-r from-teal-100/80 to-cyan-50 text-teal-900 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
                     >
-                        <component :is="icons[item.icon] ?? Home" class="h-4 w-4" />
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" :class="itemTone(item.label)"><component :is="icons[item.icon] ?? Home" class="h-4 w-4" /></span>
                         {{ item.label }}
                     </Link>
                 </template>
@@ -172,7 +193,7 @@ const logout = () => {
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
                 @click.stop
             >
-                <div class="flex h-16 items-center justify-between border-b border-slate-200 px-6">
+                <div class="flex h-16 items-center justify-between border-b border-teal-100 bg-gradient-to-r from-teal-50 via-cyan-50/60 to-blue-50 px-6">
                     <Link href="/member/dashboard" class="flex items-center gap-3 font-semibold" @click="sidebarOpen = false">
                         <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">
                             <img :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
@@ -196,10 +217,10 @@ const logout = () => {
                             <button
                                 type="button"
                                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-                                :class="isChildActive(item.children) ? 'bg-teal-50 text-teal-800' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
+                                :class="isChildActive(item.children) ? 'bg-gradient-to-r from-teal-100/80 to-cyan-50 text-teal-900 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
                                 @click="toggleMenu(item.label)"
                             >
-                                <component :is="icons[item.icon] ?? Home" class="h-4 w-4 shrink-0" />
+                                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" :class="itemTone(item.label)"><component :is="icons[item.icon] ?? Home" class="h-4 w-4" /></span>
                                 <span class="flex-1 text-left">{{ item.label }}</span>
                                 <ChevronDown
                                     class="h-4 w-4 transition-transform"
@@ -223,10 +244,10 @@ const logout = () => {
                             v-else
                             :href="item.href"
                             class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-                            :class="isActive(item.href) ? 'bg-teal-50 text-teal-800' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
+                            :class="isActive(item.href) ? 'bg-gradient-to-r from-teal-100/80 to-cyan-50 text-teal-900 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'"
                             @click="sidebarOpen = false"
                         >
-                            <component :is="icons[item.icon] ?? Home" class="h-4 w-4" />
+                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" :class="itemTone(item.label)"><component :is="icons[item.icon] ?? Home" class="h-4 w-4" /></span>
                             {{ item.label }}
                         </Link>
                     </template>
@@ -250,7 +271,7 @@ const logout = () => {
 
         <div class="lg:pl-72">
             <!-- Mobile header: hamburger + centered title + notification -->
-            <header class="sticky top-0 z-30 flex min-h-14 items-center justify-center border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden">
+            <header class="sticky top-0 z-30 flex min-h-14 items-center justify-center border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden" :style="{ paddingTop: 'env(safe-area-inset-top, 0px)' }">
                 <Button type="button" variant="ghost" size="icon" class="absolute left-2 z-10" @click="sidebarOpen = true">
                     <Menu class="h-5 w-5" />
                 </Button>
@@ -288,7 +309,7 @@ const logout = () => {
                 <slot />
             </main>
 
-            <BottomTabBar />
+            <BottomTabBar @open-menu="sidebarOpen = true" />
             <KoperasiAIChat />
         </div>
     </div>

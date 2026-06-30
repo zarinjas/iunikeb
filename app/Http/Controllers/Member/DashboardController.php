@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers\Member;
 
-use App\Enums\AnnouncementAudience;
 use App\Enums\FinancingApplicationStatus;
-use App\Models\Announcement;
 use App\Models\AnsuranProduct;
-use App\Models\Banner;
 use App\Models\FinancingApplication;
 use App\Models\FormSubmission;
 use App\Models\MemberContribution;
 use App\Models\MembershipApplication;
 use App\Models\OnlineForm;
-use App\Models\Poster;
 use App\Models\Program;
 use App\Models\ProgramRsvp;
 use App\Services\MemberCardService;
@@ -40,34 +36,9 @@ class DashboardController extends MemberPortalController
         $financingSummary = $member ? $this->financingSummary($member) : null;
         $caruman = $member ? $this->carumanSummary($member, $cooperativeId) : null;
 
-        $banners = Banner::query()
-            ->where('cooperative_id', $cooperativeId)
-            ->published()
-            ->ordered()
-            ->limit(10)
-            ->get()
-            ->map(fn (Banner $banner) => [
-                'id' => $banner->id,
-                'title' => $banner->title,
-                'image_url' => $banner->imageUrl(),
-                'link_url' => $banner->link_url,
-                'alt_text' => $banner->alt_text,
-            ])
-            ->all();
+        $banners = [];
 
-        $posters = Poster::query()
-            ->where('cooperative_id', $cooperativeId)
-            ->published()
-            ->ordered()
-            ->limit(8)
-            ->get()
-            ->map(fn (Poster $poster) => [
-                'id' => $poster->id,
-                'title' => $poster->title,
-                'image_url' => $poster->imageUrl(),
-                'alt_text' => $poster->alt_text,
-            ])
-            ->all();
+        $posters = [];
 
         $forms = OnlineForm::query()
             ->published()
@@ -112,24 +83,7 @@ class DashboardController extends MemberPortalController
                 ->all()
             : [];
 
-        $announcements = Announcement::query()
-            ->published()
-            ->ordered()
-            ->where('cooperative_id', $cooperativeId)
-            ->whereIn('audience', [
-                AnnouncementAudience::Public->value,
-                AnnouncementAudience::Members->value,
-            ])
-            ->limit(4)
-            ->get()
-            ->map(fn (Announcement $announcement) => [
-                'id' => $announcement->id,
-                'title' => $announcement->title,
-                'summary' => $announcement->summary,
-                'audience' => $announcement->audience->value,
-                'published_at' => $announcement->published_at?->format('d/m/Y'),
-            ])
-            ->all();
+        $announcements = [];
 
         $upcomingPrograms = Program::query()
             ->forCooperative($cooperativeId)

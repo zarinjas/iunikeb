@@ -27,11 +27,7 @@ class DatabaseSeeder extends Seeder
             ->whereIn('role', AccessControl::roles())
             ->each(fn (User $user) => $user->syncRoles([$user->role]));
 
-        $this->call(CmsDemoSeeder::class);
-        $this->call(ServiceDemoSeeder::class);
-        $this->call(AnnouncementDemoSeeder::class);
-        $this->call(NewsDemoSeeder::class);
-        $this->call(DocumentsDemoSeeder::class);
+        $this->call(FrontpageDemoSeeder::class);
         $this->call(MemberDemoSeeder::class);
         $this->call(DemoMembersSeeder::class);
         $this->call(MembershipApplicationDemoSeeder::class);
@@ -39,9 +35,6 @@ class DatabaseSeeder extends Seeder
         $this->call(CarumanDemoSeeder::class);
         $this->call(UnitDemoSeeder::class);
         $this->call(FinancingDemoSeeder::class);
-        $this->call(PosterDemoSeeder::class);
-        $this->call(BannerDemoSeeder::class);
-        $this->call(PopupDemoSeeder::class);
         $this->call(ProgramDemoSeeder::class);
         $this->call(AnsuranMudahDemoSeeder::class);
 

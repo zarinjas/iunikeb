@@ -24,6 +24,10 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    dark: {
+        type: Boolean,
+        default: true,
+    },
 });
 
 const sizeMap = {
@@ -45,6 +49,12 @@ const sizeMap = {
         icon: 'h-6 w-6',
         text: 'text-lg',
     },
+    xl: {
+        shell: 'h-28 w-28 rounded-2xl',
+        image: 'h-[95px] w-[95px]',
+        icon: 'h-10 w-10',
+        text: 'text-xl',
+    },
 };
 
 const currentSize = computed(() => sizeMap[props.size] ?? sizeMap.md);
@@ -56,7 +66,8 @@ const rootComponent = computed(() => (isInternal.value ? Link : 'a'));
     <component
         :is="rootComponent"
         :href="href"
-        class="inline-flex items-center gap-3 text-slate-950 transition-colors hover:text-teal-700"
+        class="inline-flex items-center gap-3 transition-colors hover:text-teal-700"
+        :class="dark ? 'text-slate-950' : 'text-white'"
     >
         <span
             v-if="logoUrl"

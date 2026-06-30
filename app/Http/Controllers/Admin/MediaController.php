@@ -74,9 +74,18 @@ class MediaController extends Controller
         ]);
     }
 
-    public function store(StoreMediaFileRequest $request): RedirectResponse
+    public function store(StoreMediaFileRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        $this->mediaFiles->store($request->file('file'), $request->user(), $request->validated());
+        $media = $this->mediaFiles->store($request->file('file'), $request->user(), $request->validated());
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'id' => $media->id,
+                'path' => $media->path,
+                'url' => $media->publicUrl(),
+                'original_name' => $media->original_name,
+            ]);
+        }
 
         return back()->with('status', 'Media berjaya dimuat naik.');
     }

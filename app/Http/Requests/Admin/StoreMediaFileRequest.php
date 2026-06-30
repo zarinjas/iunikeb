@@ -21,10 +21,17 @@ class StoreMediaFileRequest extends FormRequest
             'collection' => ['nullable', 'string', 'max:80'],
             'alt_text' => ['nullable', 'string', 'max:255'],
             'caption' => ['nullable', 'string', 'max:500'],
-            'visibility' => ['required', Rule::in([
+            'visibility' => ['nullable', Rule::in([
                 MediaVisibility::Public->value,
             ])],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('visibility')) {
+            $this->merge(['visibility' => MediaVisibility::Public->value]);
+        }
     }
 
     public function messages(): array

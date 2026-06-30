@@ -12,51 +12,13 @@ class AccessControl
 
     public const PERMISSION_VIEW_ADMIN_DASHBOARD = 'view_admin_dashboard';
 
-    public const PERMISSION_VIEW_PAGES = 'view_pages';
-
-    public const PERMISSION_CREATE_PAGES = 'create_pages';
-
-    public const PERMISSION_EDIT_PAGES = 'edit_pages';
-
-    public const PERMISSION_DELETE_PAGES = 'delete_pages';
-
-    public const PERMISSION_PUBLISH_PAGES = 'publish_pages';
+    public const PERMISSION_EDIT_FRONTPAGE = 'edit_frontpage';
 
     public const PERMISSION_VIEW_MEDIA = 'view_media';
 
     public const PERMISSION_UPLOAD_MEDIA = 'upload_media';
 
     public const PERMISSION_DELETE_MEDIA = 'delete_media';
-
-    public const PERMISSION_VIEW_SERVICES = 'view_services';
-
-    public const PERMISSION_CREATE_SERVICES = 'create_services';
-
-    public const PERMISSION_EDIT_SERVICES = 'edit_services';
-
-    public const PERMISSION_DELETE_SERVICES = 'delete_services';
-
-    public const PERMISSION_PUBLISH_SERVICES = 'publish_services';
-
-    public const PERMISSION_VIEW_ANNOUNCEMENTS = 'view_announcements';
-
-    public const PERMISSION_CREATE_ANNOUNCEMENTS = 'create_announcements';
-
-    public const PERMISSION_EDIT_ANNOUNCEMENTS = 'edit_announcements';
-
-    public const PERMISSION_DELETE_ANNOUNCEMENTS = 'delete_announcements';
-
-    public const PERMISSION_PUBLISH_ANNOUNCEMENTS = 'publish_announcements';
-
-    public const PERMISSION_VIEW_DOCUMENTS = 'view_documents';
-
-    public const PERMISSION_CREATE_DOCUMENTS = 'create_documents';
-
-    public const PERMISSION_EDIT_DOCUMENTS = 'edit_documents';
-
-    public const PERMISSION_DELETE_DOCUMENTS = 'delete_documents';
-
-    public const PERMISSION_PUBLISH_DOCUMENTS = 'publish_documents';
 
     public const PERMISSION_VIEW_MEMBERS = 'view_members';
 
@@ -76,16 +38,6 @@ class AccessControl
 
     public const PERMISSION_REJECT_MEMBERSHIP_APPLICATIONS = 'reject_membership_applications';
 
-    public const PERMISSION_VIEW_NEWS = 'view_news';
-
-    public const PERMISSION_CREATE_NEWS = 'create_news';
-
-    public const PERMISSION_EDIT_NEWS = 'edit_news';
-
-    public const PERMISSION_DELETE_NEWS = 'delete_news';
-
-    public const PERMISSION_PUBLISH_NEWS = 'publish_news';
-
     public const PERMISSION_VIEW_COMPLAINTS = 'view_complaints';
 
     public const PERMISSION_REPLY_COMPLAINTS = 'reply_complaints';
@@ -102,21 +54,7 @@ class AccessControl
 
     public const PERMISSION_VIEW_AUDIT_LOGS = 'view_audit_logs';
 
-    public const PERMISSION_VIEW_POSTERS = 'view_posters';
-
-    public const PERMISSION_CREATE_POSTERS = 'create_posters';
-
-    public const PERMISSION_EDIT_POSTERS = 'edit_posters';
-
-    public const PERMISSION_DELETE_POSTERS = 'delete_posters';
-
-    public const PERMISSION_PUBLISH_POSTERS = 'publish_posters';
-
     public const PERMISSION_VIEW_REPORTS = 'view_reports';
-
-    public const PERMISSION_VIEW_CARUMAN = 'view_caruman';
-
-    public const PERMISSION_EDIT_CARUMAN = 'edit_caruman';
 
     public const PERMISSION_VIEW_FORMS = 'view_forms';
 
@@ -160,26 +98,6 @@ class AccessControl
 
     public const PERMISSION_APPROVE_FINANCING_APPLICATIONS = 'approve_financing_applications';
 
-    public const PERMISSION_VIEW_POPUPS = 'view_popups';
-
-    public const PERMISSION_CREATE_POPUPS = 'create_popups';
-
-    public const PERMISSION_EDIT_POPUPS = 'edit_popups';
-
-    public const PERMISSION_DELETE_POPUPS = 'delete_popups';
-
-    public const PERMISSION_PUBLISH_POPUPS = 'publish_popups';
-
-    public const PERMISSION_VIEW_BANNERS = 'view_banners';
-
-    public const PERMISSION_CREATE_BANNERS = 'create_banners';
-
-    public const PERMISSION_EDIT_BANNERS = 'edit_banners';
-
-    public const PERMISSION_DELETE_BANNERS = 'delete_banners';
-
-    public const PERMISSION_PUBLISH_BANNERS = 'publish_banners';
-
     public const PERMISSION_VIEW_ANSURAN = 'view_ansuran';
 
     public const PERMISSION_MANAGE_ANSURAN_PRODUCTS = 'manage_ansuran_products';
@@ -198,6 +116,10 @@ class AccessControl
 
     public const PERMISSION_EDIT_MEMBER_FINANCIALS = 'edit_member_financials';
 
+    public const PERMISSION_VIEW_CARUMAN = 'view_caruman';
+
+    public const PERMISSION_EDIT_CARUMAN = 'edit_caruman';
+
     public const PERMISSION_VIEW_AI_KNOWLEDGE = 'view_ai_knowledge';
 
     public const PERMISSION_MANAGE_AI_KNOWLEDGE = 'manage_ai_knowledge';
@@ -215,34 +137,10 @@ class AccessControl
     {
         return [
             self::PERMISSION_VIEW_ADMIN_DASHBOARD,
-            self::PERMISSION_VIEW_PAGES,
-            self::PERMISSION_CREATE_PAGES,
-            self::PERMISSION_EDIT_PAGES,
-            self::PERMISSION_DELETE_PAGES,
-            self::PERMISSION_PUBLISH_PAGES,
+            self::PERMISSION_EDIT_FRONTPAGE,
             self::PERMISSION_VIEW_MEDIA,
             self::PERMISSION_UPLOAD_MEDIA,
             self::PERMISSION_DELETE_MEDIA,
-            self::PERMISSION_VIEW_SERVICES,
-            self::PERMISSION_CREATE_SERVICES,
-            self::PERMISSION_EDIT_SERVICES,
-            self::PERMISSION_DELETE_SERVICES,
-            self::PERMISSION_PUBLISH_SERVICES,
-            self::PERMISSION_VIEW_ANNOUNCEMENTS,
-            self::PERMISSION_CREATE_ANNOUNCEMENTS,
-            self::PERMISSION_EDIT_ANNOUNCEMENTS,
-            self::PERMISSION_DELETE_ANNOUNCEMENTS,
-            self::PERMISSION_PUBLISH_ANNOUNCEMENTS,
-            self::PERMISSION_VIEW_DOCUMENTS,
-            self::PERMISSION_CREATE_DOCUMENTS,
-            self::PERMISSION_EDIT_DOCUMENTS,
-            self::PERMISSION_DELETE_DOCUMENTS,
-            self::PERMISSION_PUBLISH_DOCUMENTS,
-            self::PERMISSION_VIEW_NEWS,
-            self::PERMISSION_CREATE_NEWS,
-            self::PERMISSION_EDIT_NEWS,
-            self::PERMISSION_DELETE_NEWS,
-            self::PERMISSION_PUBLISH_NEWS,
             self::PERMISSION_VIEW_MEMBERS,
             self::PERMISSION_CREATE_MEMBERS,
             self::PERMISSION_EDIT_MEMBERS,
@@ -267,11 +165,6 @@ class AccessControl
             self::PERMISSION_DELETE_FORMS,
             self::PERMISSION_PUBLISH_FORMS,
             self::PERMISSION_VIEW_FORM_SUBMISSIONS,
-            self::PERMISSION_VIEW_POSTERS,
-            self::PERMISSION_CREATE_POSTERS,
-            self::PERMISSION_EDIT_POSTERS,
-            self::PERMISSION_DELETE_POSTERS,
-            self::PERMISSION_PUBLISH_POSTERS,
             self::PERMISSION_VIEW_PROGRAMS,
             self::PERMISSION_CREATE_PROGRAMS,
             self::PERMISSION_EDIT_PROGRAMS,
@@ -287,16 +180,6 @@ class AccessControl
             self::PERMISSION_MANAGE_FINANCING_PRODUCTS,
             self::PERMISSION_REVIEW_FINANCING_APPLICATIONS,
             self::PERMISSION_APPROVE_FINANCING_APPLICATIONS,
-            self::PERMISSION_VIEW_BANNERS,
-            self::PERMISSION_CREATE_BANNERS,
-            self::PERMISSION_EDIT_BANNERS,
-            self::PERMISSION_DELETE_BANNERS,
-            self::PERMISSION_PUBLISH_BANNERS,
-            self::PERMISSION_VIEW_POPUPS,
-            self::PERMISSION_CREATE_POPUPS,
-            self::PERMISSION_EDIT_POPUPS,
-            self::PERMISSION_DELETE_POPUPS,
-            self::PERMISSION_PUBLISH_POPUPS,
             self::PERMISSION_VIEW_ANSURAN,
             self::PERMISSION_MANAGE_ANSURAN_PRODUCTS,
             self::PERMISSION_MANAGE_ANSURAN_TENURES,
@@ -321,34 +204,10 @@ class AccessControl
             self::ROLE_SUPER_ADMIN => self::permissions(),
             self::ROLE_ADMIN => [
                 ...$adminDashboard,
-                self::PERMISSION_VIEW_PAGES,
-                self::PERMISSION_CREATE_PAGES,
-                self::PERMISSION_EDIT_PAGES,
-                self::PERMISSION_DELETE_PAGES,
-                self::PERMISSION_PUBLISH_PAGES,
+                self::PERMISSION_EDIT_FRONTPAGE,
                 self::PERMISSION_VIEW_MEDIA,
                 self::PERMISSION_UPLOAD_MEDIA,
                 self::PERMISSION_DELETE_MEDIA,
-                self::PERMISSION_VIEW_SERVICES,
-                self::PERMISSION_CREATE_SERVICES,
-                self::PERMISSION_EDIT_SERVICES,
-                self::PERMISSION_DELETE_SERVICES,
-                self::PERMISSION_PUBLISH_SERVICES,
-                self::PERMISSION_VIEW_ANNOUNCEMENTS,
-                self::PERMISSION_CREATE_ANNOUNCEMENTS,
-                self::PERMISSION_EDIT_ANNOUNCEMENTS,
-                self::PERMISSION_DELETE_ANNOUNCEMENTS,
-                self::PERMISSION_PUBLISH_ANNOUNCEMENTS,
-                self::PERMISSION_VIEW_DOCUMENTS,
-                self::PERMISSION_CREATE_DOCUMENTS,
-                self::PERMISSION_EDIT_DOCUMENTS,
-                self::PERMISSION_DELETE_DOCUMENTS,
-                self::PERMISSION_PUBLISH_DOCUMENTS,
-                self::PERMISSION_VIEW_NEWS,
-                self::PERMISSION_CREATE_NEWS,
-                self::PERMISSION_EDIT_NEWS,
-                self::PERMISSION_DELETE_NEWS,
-                self::PERMISSION_PUBLISH_NEWS,
                 self::PERMISSION_VIEW_MEMBERS,
                 self::PERMISSION_CREATE_MEMBERS,
                 self::PERMISSION_EDIT_MEMBERS,
@@ -364,11 +223,6 @@ class AccessControl
                 self::PERMISSION_VIEW_SETTINGS,
                 self::PERMISSION_EDIT_SETTINGS,
                 self::PERMISSION_VIEW_AUDIT_LOGS,
-                self::PERMISSION_VIEW_POSTERS,
-                self::PERMISSION_CREATE_POSTERS,
-                self::PERMISSION_EDIT_POSTERS,
-                self::PERMISSION_DELETE_POSTERS,
-                self::PERMISSION_PUBLISH_POSTERS,
                 self::PERMISSION_VIEW_REPORTS,
                 self::PERMISSION_VIEW_FORMS,
                 self::PERMISSION_CREATE_FORMS,
@@ -388,16 +242,6 @@ class AccessControl
                 self::PERMISSION_MANAGE_FINANCING_PRODUCTS,
                 self::PERMISSION_REVIEW_FINANCING_APPLICATIONS,
                 self::PERMISSION_APPROVE_FINANCING_APPLICATIONS,
-                self::PERMISSION_VIEW_BANNERS,
-                self::PERMISSION_CREATE_BANNERS,
-                self::PERMISSION_EDIT_BANNERS,
-                self::PERMISSION_DELETE_BANNERS,
-                self::PERMISSION_PUBLISH_BANNERS,
-                self::PERMISSION_VIEW_POPUPS,
-                self::PERMISSION_CREATE_POPUPS,
-                self::PERMISSION_EDIT_POPUPS,
-                self::PERMISSION_DELETE_POPUPS,
-                self::PERMISSION_PUBLISH_POPUPS,
                 self::PERMISSION_VIEW_ANSURAN,
                 self::PERMISSION_MANAGE_ANSURAN_PRODUCTS,
                 self::PERMISSION_MANAGE_ANSURAN_TENURES,

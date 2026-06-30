@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\StoreMemberRequest;
 use App\Http\Requests\Admin\UpdateMemberRequest;
 use App\Http\Requests\Admin\UpdateMemberStatusRequest;
 use App\Models\Cooperative;
-use App\Models\Document;
 use App\Models\Member;
 use App\Models\MembershipApplication;
 use App\Models\User;
@@ -186,21 +185,7 @@ class MemberController extends Controller
 
         $supportingDocument = $application?->metadata['supporting_document'] ?? null;
 
-        $documents = Document::query()
-            ->where('cooperative_id', $member->cooperative_id)
-            ->where('member_id', $member->id)
-            ->latest('updated_at')
-            ->get()
-            ->map(fn (Document $document) => [
-                'id' => $document->id,
-                'title' => $document->title,
-                'status' => $document->status->value,
-                'visibility' => $document->visibility->value,
-                'updated_at' => $document->updated_at?->format('d/m/Y H:i'),
-                'edit_url' => route('admin.documents.edit', $document),
-                'download_url' => route('admin.documents.download', $document),
-            ])
-            ->all();
+        $documents = [];
 
         return [
             'id' => $member->id,

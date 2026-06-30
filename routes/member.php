@@ -2,14 +2,12 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Member\ActivationController;
-use App\Http\Controllers\Member\AnnouncementController;
 use App\Http\Controllers\Member\ApplicationController;
 use App\Http\Controllers\Member\CardController;
 use App\Http\Controllers\Member\CarumanController as MemberCarumanController;
 use App\Http\Controllers\Member\ComplaintController;
 use App\Http\Controllers\Member\KoperasiAIChatController;
 use App\Http\Controllers\Member\DashboardController;
-use App\Http\Controllers\Member\DocumentController;
 use App\Http\Controllers\Member\FinancingApplicationController;
 use App\Http\Controllers\Member\FinancingController;
 use App\Http\Controllers\Member\Financing\FinancingGeneratedDocumentController;
@@ -17,7 +15,6 @@ use App\Http\Controllers\Member\FinancingGuarantorController;
 use App\Http\Controllers\Member\NotificationController;
 use App\Http\Controllers\Member\PasswordResetController;
 use App\Http\Controllers\Member\PopupDismissController;
-use App\Http\Controllers\Member\PosterController;
 use App\Http\Controllers\Member\ProgramController as MemberProgramController;
 use App\Http\Controllers\Member\ProfileController;
 use App\Http\Controllers\Member\FormController as MemberFormController;
@@ -75,13 +72,6 @@ Route::prefix('member')->name('member.')->group(function (): void {
         Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('profile.photo.upload');
-
-        Route::get('/documents', [DocumentController::class, 'index'])
-            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
-            ->name('documents.index');
-        Route::get('/documents/{document}/download', [DocumentController::class, 'download'])
-            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
-            ->name('documents.download');
 
         Route::get('/financing', [FinancingController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
@@ -157,13 +147,6 @@ Route::prefix('member')->name('member.')->group(function (): void {
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('forms.index');
 
-        Route::get('/announcements', [AnnouncementController::class, 'index'])
-            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
-            ->name('announcements.index');
-        Route::get('/announcements/{slug}', [AnnouncementController::class, 'show'])
-            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
-            ->name('announcements.show');
-
         Route::get('/complaints', [ComplaintController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('complaints.index');
@@ -176,10 +159,6 @@ Route::prefix('member')->name('member.')->group(function (): void {
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('complaints.show');
-
-        Route::get('/posters', [PosterController::class, 'index'])
-            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
-            ->name('posters.index');
 
         Route::get('/caruman', [MemberCarumanController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)

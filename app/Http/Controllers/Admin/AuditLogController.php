@@ -6,12 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Complaint;
 use App\Models\Cooperative;
-use App\Models\Document;
 use App\Models\Member;
 use App\Models\MembershipApplication;
-use App\Models\Page;
-use App\Models\PageSection;
-use App\Models\Service;
 use App\Models\User;
 use App\Services\Settings\SettingsService;
 use Illuminate\Database\Eloquent\Builder;
@@ -252,10 +248,6 @@ class AuditLogController extends Controller
     {
         return match ($subjectType) {
             Cooperative::class => 'Tetapan Koperasi',
-            Page::class => 'Halaman CMS',
-            PageSection::class => 'Seksyen Halaman',
-            Document::class => 'Dokumen',
-            Service::class => 'Perkhidmatan',
             MembershipApplication::class => 'Permohonan Keahlian',
             Member::class => 'Ahli',
             Complaint::class => 'Aduan',
