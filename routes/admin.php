@@ -60,6 +60,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         ->name('quick-login');
     Route::post('/quick-login/super-admin', [AuthenticatedSessionController::class, 'quickLoginSuperAdmin'])
         ->name('quick-login.super-admin');
+    Route::post('/quick-login/member', [AuthenticatedSessionController::class, 'quickLoginMember'])
+        ->name('quick-login.member');
 
     Route::middleware('area:admin')->group(function (): void {
         Route::redirect('/', '/admin/dashboard')->name('home');

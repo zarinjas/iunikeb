@@ -1,5 +1,5 @@
 <script setup>
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     Brain,
     BriefcaseBusiness,
@@ -48,6 +48,7 @@ const currentPath = computed(() => currentUrl.value.split('?')[0]);
 const cooperative = computed(() => page.props.appSettings?.cooperative ?? {});
 const cooperativeName = computed(() => cooperative.value.short_name || cooperative.value.name || '');
 const logoPath = computed(() => cooperative.value.logo_url);
+const faviconUrl = computed(() => cooperative.value.favicon_url);
 
 const staffLabel = computed(() => {
     const parts = [];
@@ -118,12 +119,18 @@ const logout = () => {
 </script>
 
 <template>
+    <Head>
+        <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
+    </Head>
+
     <div class="relative min-h-screen bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
         <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-y-auto border-r border-slate-200 bg-white lg:block">
             <div class="flex h-16 items-center gap-3 border-b border-slate-200 px-6">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
-                    <img v-if="logoPath" :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
-                    <Building2 v-else class="h-5 w-5" />
+                <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">
+                    <img :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
+                </span>
+                <span v-else class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
+                    <Building2 class="h-5 w-5" />
                 </span>
                 <div>
                     <p class="text-sm font-semibold">{{ cooperativeName }}</p>
@@ -157,9 +164,11 @@ const logout = () => {
             <aside class="mr-auto flex h-full w-full max-w-xs flex-col border-r border-slate-200 bg-white shadow-xl" @click.stop>
                 <div class="flex h-16 items-center justify-between gap-3 border-b border-slate-200 px-6">
                     <div class="flex items-center gap-3">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
-                            <img v-if="logoPath" :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
-                            <Building2 v-else class="h-5 w-5" />
+                        <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">
+                            <img :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
+                        </span>
+                        <span v-else class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
+                            <Building2 class="h-5 w-5" />
                         </span>
                         <div>
                             <p class="text-sm font-semibold">{{ cooperativeName }}</p>

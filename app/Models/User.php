@@ -16,7 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['cooperative_id', 'staff_id', 'unit_id', 'position_title', 'name', 'email', 'role', 'password', 'avatar_path', 'phone', 'user_type', 'status', 'last_login_at'])]
+#[Fillable(['cooperative_id', 'staff_id', 'unit_id', 'position_title', 'name', 'email', 'role', 'password', 'avatar_path', 'phone', 'user_type', 'status', 'is_protected', 'last_login_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -52,6 +52,15 @@ class User extends Authenticatable
         return $this->hasMany(Complaint::class, 'assigned_to');
     }
 
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if ($user->is_protected) {
+                throw new \RuntimeException('Akaun demo yang dilindungi tidak boleh dipadam.');
+            }
+        });
+    }
+
     public function isAdmin(): bool
     {
         return $this->hasAnyRole(AccessControl::adminRoles())
@@ -75,6 +84,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'is_protected' => 'boolean',
         ];
     }
 }

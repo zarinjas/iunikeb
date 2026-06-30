@@ -125,6 +125,10 @@ class AuthenticatedSessionController extends Controller
                 'label' => 'Log Masuk Demo Admin',
                 'url' => route('admin.quick-login'),
             ],
+            [
+                'label' => 'Log Masuk Demo Ahli',
+                'url' => route('admin.quick-login.member'),
+            ],
         ];
     }
 

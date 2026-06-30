@@ -1,5 +1,5 @@
 <script setup>
-import { Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Building2, ChevronDown, FileText, LogIn, Mail, MapPin, Menu, Phone, ShieldCheck, UserRound, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import AppLogo from '@/Shared/Components/AppLogo.vue';
@@ -11,6 +11,7 @@ const mobileMenuOpen = ref(false);
 const activeDropdown = ref(null);
 const navRef = ref(null);
 const cooperative = computed(() => page.props.appSettings?.cooperative ?? {});
+const faviconUrl = computed(() => cooperative.value.favicon_url);
 const contact = computed(() => page.props.appSettings?.contact ?? {});
 
 function toggleDropdown(label) {
@@ -129,6 +130,10 @@ const address = computed(() => [
 </script>
 
 <template>
+    <Head>
+        <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
+    </Head>
+
     <div class="min-h-screen bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
         <header class="sticky top-0 z-40 border-b border-teal-900/10 bg-white/90 shadow-sm shadow-slate-200/40 backdrop-blur-xl">
             <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">

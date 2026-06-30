@@ -160,7 +160,7 @@ const submit = () => {
                     <!-- Logo Upload -->
                     <div class="space-y-4">
                         <div v-if="logoPreview" class="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                            <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl">
                                 <img :src="logoPreview" alt="Logo semasa" class="h-12 w-12 rounded-lg object-contain" />
                             </span>
                             <div class="min-w-0">
@@ -194,7 +194,7 @@ const submit = () => {
                     <!-- Favicon Upload -->
                     <div class="space-y-4">
                         <div v-if="faviconPreview" class="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                            <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl">
                                 <img :src="faviconPreview" alt="Favicon semasa" class="h-10 w-10 rounded object-contain" />
                             </span>
                             <div class="min-w-0">

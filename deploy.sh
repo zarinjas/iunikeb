@@ -1,42 +1,30 @@
 #!/bin/bash
 set -e
 
-HOST="160.30.5.131"
-USER="root"
-PORT="22"
-IDENTITY="$HOME/.ssh/koperasihub"
-REMOTE_PATH="/home/koperasihub.my/public_html"
+BRANCH="main"
+VPS_HOST="tencentcloud"
+REMOTE_PATH="/var/www/iunikeb.com.my/public_html"
 
-echo "=== 1. Delete public/hot (jika ada) ==="
-rm -f public/hot
+echo "=== 1. Push ke GitHub ==="
+read -p "Mesej commit: " MSG
+git add .
+git commit -m "$MSG" || echo "Tiada perubahan baru"
+git push origin "$BRANCH"
 
-echo "=== 2. Rsync ke VPS ==="
-rsync -avzr --delete \
-  -e "ssh -i $IDENTITY -p $PORT" \
-  --exclude='.git' \
-  --exclude='.github' \
-  --exclude='node_modules' \
-  --exclude='storage/framework' \
-  --exclude='storage/logs' \
-  --exclude='storage/app/private' \
-  --exclude='public/storage' \
-  --exclude='public/hot' \
-  ./ "$USER@$HOST:$REMOTE_PATH"
-
-echo "=== 3. SSH: Fix ownership + rebuild ==="
-ssh -i "$IDENTITY" -p "$PORT" "$USER@$HOST" << 'EOF'
+echo "=== 2. Deploy kat VPS ==="
+ssh "$VPS_HOST" << EOF
   set -e
-  cd /home/koperasihub.my/public_html
+  cd $REMOTE_PATH
+  git config --global --add safe.directory $REMOTE_PATH
 
-  echo "--- Fix ownership ---"
-  chown koper9666:koper9666 .
-  chmod 755 .
-  chmod 664 database/database.sqlite
-  chmod 777 database
-  chmod -R 775 storage bootstrap/cache
+  echo "--- Bersihkan hot file ---"
+  rm -f public/hot
+
+  echo "--- Git pull ---"
+  git pull origin $BRANCH
 
   echo "--- Install PHP deps ---"
-  composer install --no-dev --optimize-autoloader
+  composer install --no-dev --optimize-autoloader 2>/dev/null || true
 
   echo "--- Build frontend ---"
   npm ci && npm run build
@@ -53,7 +41,7 @@ ssh -i "$IDENTITY" -p "$PORT" "$USER@$HOST" << 'EOF'
   php artisan storage:link --force
 
   echo "--- Final permissions ---"
-  chown -R koper9666:koper9666 .
+  chown -R admin:admin .
   chmod -R 775 storage bootstrap/cache
 
   echo "✓ Deploy selesai!"

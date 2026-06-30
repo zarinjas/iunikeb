@@ -1,5 +1,5 @@
 <script setup>
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Building2, Calculator, CalendarCheck, CalendarDays, ChevronDown, CreditCard, FileCheck, FileText, Files, HandCoins, Home, ImagePlay, LogOut, Megaphone, Menu, MessagesSquare, ShoppingCart, Wallet, UserRound, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import BottomTabBar from '@/Shared/Components/BottomTabBar.vue';
@@ -17,6 +17,7 @@ const currentUrl = computed(() => page.url);
 const cooperative = computed(() => page.props.appSettings?.cooperative ?? {});
 const cooperativeName = computed(() => cooperative.value.short_name || cooperative.value.name || '');
 const logoPath = computed(() => cooperative.value.logo_url);
+const faviconUrl = computed(() => cooperative.value.favicon_url);
 
 const icons = {
     Calculator,
@@ -95,15 +96,21 @@ const logout = () => {
 </script>
 
 <template>
+    <Head>
+        <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
+    </Head>
+
     <MemberPopup v-if="page.props.popup" :popup="page.props.popup" />
 
     <div class="relative min-h-screen bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
         <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-y-auto border-r border-slate-200 bg-white lg:block">
             <div class="flex h-16 items-center gap-3 border-b border-slate-200 px-6">
                 <Link href="/member/dashboard" class="flex items-center gap-3 font-semibold">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
-                        <img v-if="logoPath" :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
-                        <Building2 v-else class="h-5 w-5" />
+                    <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">
+                        <img :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
+                    </span>
+                    <span v-else class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
+                        <Building2 class="h-5 w-5" />
                     </span>
                     <div>
                         <p class="text-sm font-semibold">{{ cooperativeName }}</p>
@@ -167,9 +174,11 @@ const logout = () => {
             >
                 <div class="flex h-16 items-center justify-between border-b border-slate-200 px-6">
                     <Link href="/member/dashboard" class="flex items-center gap-3 font-semibold" @click="sidebarOpen = false">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
-                            <img v-if="logoPath" :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
-                            <Building2 v-else class="h-5 w-5" />
+                        <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">
+                            <img :src="logoPath" :alt="cooperativeName" class="h-7 w-7 rounded object-contain" />
+                        </span>
+                        <span v-else class="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-700 text-white">
+                            <Building2 class="h-5 w-5" />
                         </span>
                         <div>
                             <p class="text-sm font-semibold">{{ cooperativeName }}</p>

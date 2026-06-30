@@ -59,11 +59,18 @@ const rootComponent = computed(() => (isInternal.value ? Link : 'a'));
         class="inline-flex items-center gap-3 text-slate-950 transition-colors hover:text-teal-700"
     >
         <span
+            v-if="logoUrl"
+            class="flex items-center justify-center"
+            :class="currentSize.shell"
+        >
+            <img :src="logoUrl" :alt="name" class="rounded object-contain" :class="currentSize.image" />
+        </span>
+        <span
+            v-else
             class="flex items-center justify-center bg-gradient-to-br from-teal-700 to-blue-700 text-white shadow-sm"
             :class="currentSize.shell"
         >
-            <img v-if="logoUrl" :src="logoUrl" :alt="name" class="rounded object-contain" :class="currentSize.image" />
-            <Building2 v-else :class="currentSize.icon" />
+            <Building2 :class="currentSize.icon" />
         </span>
 
         <span v-if="showText" class="min-w-0">

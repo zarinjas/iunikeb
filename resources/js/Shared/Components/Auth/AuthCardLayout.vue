@@ -1,7 +1,10 @@
 <script setup>
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Building2 } from 'lucide-vue-next';
+
+const page = usePage();
+const faviconUrl = computed(() => page.props.appSettings?.cooperative?.favicon_url);
 
 const props = defineProps({
     variant: {
@@ -35,6 +38,10 @@ const isAdmin = computed(() => props.variant === 'admin');
 </script>
 
 <template>
+    <Head>
+        <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
+    </Head>
+
     <main class="min-h-screen bg-gradient-to-b from-teal-50/50 via-white to-cyan-50/30 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
         <!-- Admin: 2-column layout -->
         <div
@@ -43,16 +50,21 @@ const isAdmin = computed(() => props.variant === 'admin');
         >
             <section class="hidden space-y-6 lg:block">
                 <div
-                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-sm"
-                    :style="{ backgroundColor: primaryColor }"
+                    v-if="logoUrl"
+                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl"
                 >
                     <img
-                        v-if="logoUrl"
                         :src="logoUrl"
                         :alt="cooperativeName"
                         class="h-10 w-10 rounded object-contain"
                     />
-                    <Building2 v-else class="h-7 w-7" />
+                </div>
+                <div
+                    v-else
+                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-sm"
+                    :style="{ backgroundColor: primaryColor }"
+                >
+                    <Building2 class="h-7 w-7" />
                 </div>
                 <div class="space-y-4">
                     <span
@@ -95,16 +107,21 @@ const isAdmin = computed(() => props.variant === 'admin');
             <section class="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div class="mb-6 space-y-3">
                     <div
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl text-white"
-                        :style="{ backgroundColor: primaryColor }"
+                        v-if="logoUrl"
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl"
                     >
                         <img
-                            v-if="logoUrl"
                             :src="logoUrl"
                             :alt="cooperativeName"
                             class="h-9 w-9 rounded object-contain"
                         />
-                        <Building2 v-else class="h-6 w-6" />
+                    </div>
+                    <div
+                        v-else
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl text-white"
+                        :style="{ backgroundColor: primaryColor }"
+                    >
+                        <Building2 class="h-6 w-6" />
                     </div>
                     <div class="space-y-2">
                         <p class="text-sm font-medium text-slate-500">{{ cooperativeName }}</p>

@@ -16,6 +16,7 @@ const page = usePage();
 const cooperative = computed(() => page.props.appSettings?.cooperative ?? {});
 const cooperativeName = computed(() => cooperative.value.short_name || cooperative.value.name || 'Portal Ahli');
 const logoPath = computed(() => cooperative.value.logo_path);
+const faviconUrl = computed(() => cooperative.value.favicon_url);
 const currentStep = ref(props.step);
 const icNotFound = ref(false);
 
@@ -60,7 +61,9 @@ const mailtoLink = computed(() => {
 </script>
 
 <template>
-    <Head title="Aktifkan Akaun Portal Ahli" />
+    <Head title="Aktifkan Akaun Portal Ahli">
+        <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
+    </Head>
 
     <main class="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
         <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md items-center">
