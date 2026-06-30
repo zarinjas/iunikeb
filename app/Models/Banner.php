@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_by',
     'updated_by',
 ])]
-class Poster extends Model
+class Banner extends Model
 {
     use SoftDeletes;
 

@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\AiKnowledgeController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\PosterController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Support\AccessControl;
@@ -529,6 +530,32 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_UNITS)
             ->name('units.destroy');
 
+        // Banners
+        Route::get('/banners', [BannerController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.index');
+        Route::get('/banners/create', [BannerController::class, 'create'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.create');
+        Route::post('/banners', [BannerController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.store');
+        Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.edit');
+        Route::match(['put', 'patch'], '/banners/{banner}', [BannerController::class, 'update'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.update');
+        Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.destroy');
+        Route::post('/banners/{banner}/toggle', [BannerController::class, 'toggle'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.toggle');
+        Route::post('/banners/reorder', [BannerController::class, 'reorder'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
+            ->name('banners.reorder');
+
         // Posters
         Route::get('/posters', [PosterController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
@@ -548,6 +575,12 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::delete('/posters/{poster}', [PosterController::class, 'destroy'])
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
             ->name('posters.destroy');
+        Route::post('/posters/{poster}/toggle', [PosterController::class, 'toggle'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.toggle');
+        Route::post('/posters/reorder', [PosterController::class, 'reorder'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.reorder');
 
         // Staff
         Route::get('/staff', [StaffController::class, 'index'])

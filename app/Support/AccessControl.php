@@ -124,6 +124,8 @@ class AccessControl
 
     public const PERMISSION_MANAGE_AI_KNOWLEDGE = 'manage_ai_knowledge';
 
+    public const PERMISSION_MANAGE_BANNERS = 'manage_banners';
+
     public const PERMISSION_MANAGE_POSTERS = 'manage_posters';
 
     public static function roles(): array
@@ -195,6 +197,7 @@ class AccessControl
             self::PERMISSION_EDIT_CARUMAN,
             self::PERMISSION_VIEW_AI_KNOWLEDGE,
             self::PERMISSION_MANAGE_AI_KNOWLEDGE,
+            self::PERMISSION_MANAGE_BANNERS,
             self::PERMISSION_MANAGE_POSTERS,
         ];
     }
@@ -258,6 +261,7 @@ class AccessControl
                 self::PERMISSION_EDIT_CARUMAN,
                 self::PERMISSION_VIEW_AI_KNOWLEDGE,
                 self::PERMISSION_MANAGE_AI_KNOWLEDGE,
+                self::PERMISSION_MANAGE_BANNERS,
                 self::PERMISSION_MANAGE_POSTERS,
             ],
             self::ROLE_MEMBER => [

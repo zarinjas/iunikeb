@@ -136,15 +136,15 @@ class HandleInertiaRequests extends Middleware
             ['label' => 'Halaman Utama', 'href' => route('admin.frontpage.index'), 'permission' => AccessControl::PERMISSION_EDIT_FRONTPAGE, 'icon' => 'Layout'],
             [
                 'label' => 'Media',
-                'href' => route('admin.media.index'),
+                'href' => route('admin.banners.index'),
                 'icon' => 'Image',
                 'active_patterns' => [
-                    '/admin/media',
+                    '/admin/banners', '/admin/banners/*',
                     '/admin/posters', '/admin/posters/*',
                 ],
                 'children' => [
-                    ['label' => 'Pustaka Media', 'href' => route('admin.media.index'), 'permission' => AccessControl::PERMISSION_VIEW_MEDIA],
-                    ['label' => 'Poster & Banner', 'href' => route('admin.posters.index'), 'permission' => AccessControl::PERMISSION_MANAGE_POSTERS],
+                    ['label' => 'Banner', 'href' => route('admin.banners.index'), 'permission' => AccessControl::PERMISSION_MANAGE_BANNERS],
+                    ['label' => 'Poster', 'href' => route('admin.posters.index'), 'permission' => AccessControl::PERMISSION_MANAGE_POSTERS],
                 ],
             ],
             [

@@ -9,6 +9,7 @@ use App\Models\FormSubmission;
 use App\Models\MemberContribution;
 use App\Models\MembershipApplication;
 use App\Models\OnlineForm;
+use App\Models\Banner;
 use App\Models\Poster;
 use App\Models\Program;
 use App\Models\ProgramRsvp;
@@ -37,33 +38,29 @@ class DashboardController extends MemberPortalController
         $financingSummary = $member ? $this->financingSummary($member) : null;
         $caruman = $member ? $this->carumanSummary($member, $cooperativeId) : null;
 
-        $banners = Poster::query()
+        $banners = Banner::query()
             ->where('cooperative_id', $cooperativeId)
-            ->banners()
             ->active()
-            ->whereIn('audience', ['members', 'both'])
-            ->orderBy('sort_order')
+            ->ordered()
             ->get()
-            ->map(fn (Poster $p) => [
-                'id' => $p->id,
-                'title' => $p->title,
-                'alt_text' => $p->alt_text,
-                'image_url' => $p->imageUrl(),
-                'link_url' => $p->link_url,
+            ->map(fn (Banner $b) => [
+                'id' => $b->id,
+                'title' => $b->image_path ? pathinfo($b->image_path, PATHINFO_FILENAME) : '',
+                'alt_text' => '',
+                'image_url' => $b->imageUrl(),
+                'link_url' => $b->link_url,
             ])
             ->all();
 
         $posters = Poster::query()
             ->where('cooperative_id', $cooperativeId)
-            ->posters()
             ->active()
-            ->whereIn('audience', ['members', 'both'])
-            ->orderBy('sort_order')
+            ->ordered()
             ->get()
             ->map(fn (Poster $p) => [
                 'id' => $p->id,
-                'title' => $p->title,
-                'alt_text' => $p->alt_text,
+                'title' => $p->image_path ? pathinfo($p->image_path, PATHINFO_FILENAME) : '',
+                'alt_text' => '',
                 'image_url' => $p->imageUrl(),
                 'link_url' => $p->link_url,
             ])

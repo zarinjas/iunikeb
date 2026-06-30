@@ -8,7 +8,6 @@ use App\Models\Poster;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,33 +22,22 @@ class PosterController extends Controller
     public function index(Request $request): Response
     {
         $cooperative = $this->activeCooperative();
-        $search = trim((string) $request->string('search'));
-        $type = trim((string) $request->string('type'));
 
         $posters = Poster::query()
             ->where('cooperative_id', $cooperative?->id)
-            ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%"))
-            ->when($type !== '', fn ($q) => $q->where('type', $type))
-            ->latest()
+            ->ordered()
             ->paginate(15)
             ->withQueryString()
             ->through(fn (Poster $poster) => [
                 'id' => $poster->id,
-                'title' => $poster->title,
-                'type' => $poster->type,
-                'audience' => $poster->audience,
-                'is_active' => $poster->is_active,
-                'sort_order' => $poster->sort_order,
                 'image_url' => $poster->imageUrl(),
                 'link_url' => $poster->link_url,
-                'updated_at' => $poster->updated_at?->format('d/m/Y H:i'),
+                'is_active' => $poster->is_active,
+                'sort_order' => $poster->sort_order,
+                'created_at' => $poster->created_at?->format('d/m/Y H:i'),
             ]);
 
         return Inertia::render('Admin/Pages/Posters/Index', [
-            'filters' => [
-                'search' => $search,
-                'type' => $type,
-            ],
             'posters' => $posters,
         ]);
     }
@@ -64,27 +52,25 @@ class PosterController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $cooperative = $this->activeCooperative();
+
         $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'image_path' => ['required', 'string', 'max:255'],
-            'link_url' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(['banner', 'poster'])],
-            'audience' => ['required', Rule::in(['public', 'members', 'both'])],
-            'is_active' => ['required', 'boolean'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'image' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'link_url' => ['nullable', 'url', 'max:255'],
+        ], [
+            'image.required' => 'Sila pilih gambar poster.',
+            'image.mimes' => 'Format gambar mestilah JPG atau PNG sahaja.',
+            'image.max' => 'Saiz fail tidak boleh melebihi 1MB.',
+            'link_url.url' => 'Pautan mestilah URL yang sah.',
         ]);
+
+        $imagePath = $request->file('image')->store('posters', 'public');
 
         $poster = Poster::query()->create([
             'cooperative_id' => $cooperative?->id,
-            'title' => $validated['title'],
-            'alt_text' => $validated['alt_text'] ?? null,
-            'image_path' => $validated['image_path'],
+            'image_path' => $imagePath,
             'link_url' => $validated['link_url'] ?? null,
-            'type' => $validated['type'],
-            'audience' => $validated['audience'],
-            'is_active' => (bool) $validated['is_active'],
-            'sort_order' => $validated['sort_order'] ?? 0,
+            'sort_order' => 0,
+            'is_active' => true,
             'created_by' => $request->user()?->id,
             'updated_by' => $request->user()?->id,
         ]);
@@ -101,15 +87,10 @@ class PosterController extends Controller
         return Inertia::render('Admin/Pages/Posters/Form', [
             'poster' => [
                 'id' => $poster->id,
-                'title' => $poster->title,
-                'alt_text' => $poster->alt_text,
-                'image_path' => $poster->image_path,
                 'image_url' => $poster->imageUrl(),
+                'image_path' => $poster->image_path,
                 'link_url' => $poster->link_url,
-                'type' => $poster->type,
-                'audience' => $poster->audience,
                 'is_active' => $poster->is_active,
-                'sort_order' => $poster->sort_order,
             ],
         ]);
     }
@@ -117,32 +98,30 @@ class PosterController extends Controller
     public function update(Request $request, Poster $poster): RedirectResponse
     {
         $this->ensureSameCooperative($poster);
-        $cooperative = $this->activeCooperative();
 
         $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'image_path' => ['required', 'string', 'max:255'],
-            'link_url' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(['banner', 'poster'])],
-            'audience' => ['required', Rule::in(['public', 'members', 'both'])],
-            'is_active' => ['required', 'boolean'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'link_url' => ['nullable', 'url', 'max:255'],
+        ], [
+            'image.mimes' => 'Format gambar mestilah JPG atau PNG sahaja.',
+            'image.max' => 'Saiz fail tidak boleh melebihi 1MB.',
+            'link_url.url' => 'Pautan mestilah URL yang sah.',
         ]);
+
+        $data = [
+            'link_url' => $validated['link_url'] ?? null,
+            'updated_by' => $request->user()?->id,
+        ];
+
+        if ($request->hasFile('image')) {
+            if ($poster->image_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($poster->image_path);
+            }
+            $data['image_path'] = $request->file('image')->store('posters', 'public');
+        }
 
         $old = $poster->toArray();
-
-        $poster->update([
-            'title' => $validated['title'],
-            'alt_text' => $validated['alt_text'] ?? null,
-            'image_path' => $validated['image_path'],
-            'link_url' => $validated['link_url'] ?? null,
-            'type' => $validated['type'],
-            'audience' => $validated['audience'],
-            'is_active' => (bool) $validated['is_active'],
-            'sort_order' => $validated['sort_order'] ?? 0,
-            'updated_by' => $request->user()?->id,
-        ]);
+        $poster->update($data);
 
         $this->auditLog->record('poster.updated', $poster, oldValues: $old, newValues: $poster->fresh()->toArray());
 
@@ -153,9 +132,44 @@ class PosterController extends Controller
     {
         $this->ensureSameCooperative($poster);
 
+        if ($poster->image_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($poster->image_path);
+        }
+
         $this->auditLog->record('poster.deleted', $poster, oldValues: $poster->toArray());
         $poster->delete();
 
         return back()->with('status', 'Poster berjaya dipadam.');
+    }
+
+    public function toggle(Poster $poster): RedirectResponse
+    {
+        $this->ensureSameCooperative($poster);
+
+        $old = $poster->toArray();
+        $poster->update(['is_active' => ! $poster->is_active]);
+
+        $this->auditLog->record('poster.toggled', $poster, oldValues: $old, newValues: $poster->fresh()->toArray());
+
+        return back()->with('status', $poster->is_active ? 'Poster diaktifkan.' : 'Poster dinyahaktifkan.');
+    }
+
+    public function reorder(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ordered_ids' => ['required', 'array'],
+            'ordered_ids.*' => ['integer'],
+        ]);
+
+        $cooperative = $this->activeCooperative();
+
+        foreach ($validated['ordered_ids'] as $index => $id) {
+            Poster::query()
+                ->where('cooperative_id', $cooperative?->id)
+                ->where('id', $id)
+                ->update(['sort_order' => $index]);
+        }
+
+        return back()->with('status', 'Susunan poster dikemas kini.');
     }
 }

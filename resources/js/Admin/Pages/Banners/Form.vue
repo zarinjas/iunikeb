@@ -9,18 +9,18 @@ import ToggleSwitch from '@/Shared/Components/Form/ToggleSwitch.vue';
 import { Button } from '@/Shared/Components/ui/button';
 
 const props = defineProps({
-    poster: { type: Object, default: null },
+    banner: { type: Object, default: null },
 });
 
-const isEdit = computed(() => Boolean(props.poster));
+const isEdit = computed(() => Boolean(props.banner));
 
 const form = useForm({
     image: null,
-    link_url: props.poster?.link_url || '',
-    is_active: props.poster?.is_active ?? true,
+    link_url: props.banner?.link_url || '',
+    is_active: props.banner?.is_active ?? true,
 });
 
-const previewUrl = ref(props.poster?.image_url || null);
+const previewUrl = ref(props.banner?.image_url || null);
 const fileError = ref('');
 
 const handleFileSelect = (e) => {
@@ -30,14 +30,14 @@ const handleFileSelect = (e) => {
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
         fileError.value = 'Format fail tidak sah. Hanya JPG dan PNG dibenarkan.';
         form.image = null;
-        previewUrl.value = props.poster?.image_url || null;
+        previewUrl.value = props.banner?.image_url || null;
         return;
     }
 
     if (file.size > 1024 * 1024) {
         fileError.value = 'Saiz fail melebihi 1MB. Sila pilih fail yang lebih kecil.';
         form.image = null;
-        previewUrl.value = props.poster?.image_url || null;
+        previewUrl.value = props.banner?.image_url || null;
         return;
     }
 
@@ -54,7 +54,7 @@ const handleFileSelect = (e) => {
 
 const submit = () => {
     if (!isEdit.value && !form.image) {
-        fileError.value = 'Sila pilih gambar poster.';
+        fileError.value = 'Sila pilih gambar banner.';
         return;
     }
 
@@ -74,7 +74,7 @@ const submit = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    form.post(isEdit.value ? `/admin/posters/${props.poster.id}` : '/admin/posters', {
+    form.post(isEdit.value ? `/admin/banners/${props.banner.id}` : '/admin/banners', {
         forceFormData: true,
         onSuccess,
         onError,
@@ -83,22 +83,22 @@ const submit = () => {
 </script>
 
 <template>
-    <Head :title="isEdit ? 'Edit Poster' : 'Tambah Poster'" />
+    <Head :title="isEdit ? 'Edit Banner' : 'Tambah Banner'" />
     <AdminLayout>
         <section class="space-y-6">
             <PageHeader
-                :title="isEdit ? 'Edit Poster' : 'Tambah Poster'"
-                :description="isEdit ? 'Kemas kini poster infografik.' : 'Muat naik poster infografik baharu.'"
+                :title="isEdit ? 'Edit Banner' : 'Tambah Banner'"
+                :description="isEdit ? 'Kemas kini banner carousel.' : 'Muat naik banner baharu untuk dashboard ahli.'"
             >
                 <template #actions>
-                    <Button :as="Link" href="/admin/posters" variant="outline">Kembali</Button>
+                    <Button :as="Link" href="/admin/banners" variant="outline">Kembali</Button>
                 </template>
             </PageHeader>
 
-            <FormSection title="Muat Naik Poster">
+            <FormSection title="Muat Naik Banner">
                 <div class="space-y-4">
                     <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                        <p class="mb-3 text-sm text-slate-500">Saiz dicadangkan: <strong>1080×1350px</strong>. Maksimum 1MB. Format: JPG/PNG sahaja.</p>
+                        <p class="mb-3 text-sm text-slate-500">Saiz dicadangkan: <strong>1200×400px</strong>. Maksimum 1MB. Format: JPG/PNG sahaja.</p>
 
                         <label
                             class="inline-flex cursor-pointer flex-col items-center gap-2 rounded-xl bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200 transition hover:ring-teal-300"
@@ -121,23 +121,23 @@ const submit = () => {
 
                     <div v-if="previewUrl" class="overflow-hidden rounded-xl ring-1 ring-slate-200">
                         <p class="bg-slate-50 px-4 py-1.5 text-xs font-medium text-slate-500">Pratonton</p>
-                        <img :src="previewUrl" alt="Pratonton poster" class="mx-auto max-h-80 object-contain" />
+                        <img :src="previewUrl" alt="Pratonton banner" class="w-full object-cover" style="aspect-ratio: 3/1" />
                     </div>
 
                     <TextInput
-                        id="poster-link"
+                        id="banner-link"
                         v-model="form.link_url"
                         label="Pautan (opsional)"
                         placeholder="https://..."
                         :error="form.errors.link_url"
                     />
 
-                    <ToggleSwitch v-if="isEdit" id="poster-active" v-model="form.is_active" label="Aktif" />
+                    <ToggleSwitch v-if="isEdit" id="banner-active" v-model="form.is_active" label="Aktif" />
                 </div>
             </FormSection>
 
             <div class="flex justify-end gap-3">
-                <Button :as="Link" href="/admin/posters" variant="outline">Batal</Button>
+                <Button :as="Link" href="/admin/banners" variant="outline">Batal</Button>
                 <Button type="button" @click="submit" :disabled="form.processing">
                     {{ form.processing ? 'Menyimpan...' : (isEdit ? 'Kemas Kini' : 'Simpan') }}
                 </Button>

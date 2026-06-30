@@ -1,55 +1,60 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { reactive, ref } from 'vue';
+import { GripVertical, Link2, Pencil, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-vue-next';
+import { ref } from 'vue';
 import AdminLayout from '@/Admin/Layouts/AdminLayout.vue';
-import AdminRowActions from '@/Shared/Components/AdminRowActions.vue';
 import ConfirmDialog from '@/Shared/Components/ConfirmDialog.vue';
-import DataTable from '@/Shared/Components/DataTable.vue';
 import EmptyState from '@/Shared/Components/EmptyState.vue';
 import PageHeader from '@/Shared/Components/PageHeader.vue';
-import SearchInput from '@/Shared/Components/SearchInput.vue';
-import StatusBadge from '@/Shared/Components/StatusBadge.vue';
-import { Badge } from '@/Shared/Components/ui/badge';
 import { Button } from '@/Shared/Components/ui/button';
 
 const props = defineProps({
-    filters: { type: Object, required: true },
     posters: { type: Object, required: true },
 });
 
 const deleteTarget = ref(null);
+const dragIndex = ref(null);
+const dragOverIndex = ref(null);
 
-const filters = reactive({ search: props.filters.search || '', type: props.filters.type || '' });
-const applyFilters = () => router.get('/admin/posters', filters, { preserveState: true, replace: true });
+const onDragStart = (e, idx) => {
+    dragIndex.value = idx;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', idx);
+};
 
-const columns = [
-    { key: 'image', label: 'Gambar' },
-    { key: 'title', label: 'Tajuk' },
-    { key: 'type', label: 'Jenis' },
-    { key: 'audience', label: 'Audien' },
-    { key: 'active', label: 'Status' },
-    { key: 'actions', label: 'Tindakan' },
-];
+const onDragOver = (e, idx) => {
+    e.preventDefault();
+    dragOverIndex.value = idx;
+};
 
-const getActions = (row) => [
-    { label: 'Edit', icon: Pencil, href: `/admin/posters/${row.id}/edit` },
-    { label: 'Padam', icon: Trash2, variant: 'destructive', onClick: () => { deleteTarget.value = row.id; } },
-];
+const onDragEnd = () => {
+    dragIndex.value = null;
+    dragOverIndex.value = null;
+};
 
-const typeLabel = (type) => type === 'banner' ? 'Banner' : 'Poster';
+const onDrop = (e, idx) => {
+    e.preventDefault();
+    const from = dragIndex.value;
+    dragIndex.value = null;
+    dragOverIndex.value = null;
 
-const audienceLabel = (audience) => {
-    const map = { public: 'Awam', members: 'Ahli', both: 'Semua' };
-    return map[audience] || audience;
+    if (from === null || from === idx) return;
+
+    const items = [...props.posters.data];
+    const [moved] = items.splice(from, 1);
+    items.splice(idx, 0, moved);
+
+    router.post('/admin/posters/reorder', {
+        ordered_ids: items.map(i => i.id),
+    }, { preserveScroll: true, preserveState: true });
 };
 </script>
 
 <template>
-    <Head title="Poster & Banner" />
+    <Head title="Poster" />
     <AdminLayout>
         <section class="space-y-6">
-            <PageHeader title="Poster & Banner" description="Urus poster dan banner untuk laman web dan portal ahli.">
+            <PageHeader title="Poster" description="Urus poster infografik untuk galeri ahli. Seret untuk susun semula.">
                 <template #actions>
                     <Button :as="Link" href="/admin/posters/create">
                         <Plus class="mr-2 h-4 w-4" />
@@ -58,30 +63,81 @@ const audienceLabel = (audience) => {
                 </template>
             </PageHeader>
 
-            <div class="flex max-w-sm gap-3">
-                <SearchInput v-model="filters.search" placeholder="Cari poster..." @update:model-value="applyFilters" />
+            <EmptyState
+                v-if="posters.data.length === 0"
+                title="Tiada poster"
+                description="Poster akan dipaparkan dalam galeri di dashboard ahli."
+                compact
+            />
+
+            <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                <div
+                    v-for="(poster, idx) in posters.data"
+                    :key="poster.id"
+                    draggable="true"
+                    class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all"
+                    :class="{
+                        'opacity-40 scale-95': dragIndex === idx,
+                        'border-teal-400 ring-2 ring-teal-100': dragOverIndex === idx,
+                    }"
+                    @dragstart="onDragStart($event, idx)"
+                    @dragover="onDragOver($event, idx)"
+                    @dragend="onDragEnd"
+                    @drop="onDrop($event, idx)"
+                >
+                    <span class="absolute left-1.5 top-1.5 z-10 cursor-grab rounded-md bg-white/80 p-0.5 text-slate-400 shadow-sm backdrop-blur-sm transition hover:text-slate-600 active:cursor-grabbing">
+                        <GripVertical class="h-4 w-4" />
+                    </span>
+
+                    <div class="aspect-[4/5] overflow-hidden">
+                        <img
+                            v-if="poster.image_url"
+                            :src="poster.image_url"
+                            alt="Poster"
+                            class="h-full w-full object-cover"
+                        />
+                        <div v-else class="flex h-full w-full items-center justify-center bg-slate-100 text-xs text-slate-400">
+                            Tiada
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-1.5 p-2">
+                        <div class="flex items-center gap-1.5">
+                            <span
+                                class="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                :class="poster.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'"
+                            >
+                                {{ poster.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                            </span>
+                            <Link2 v-if="poster.link_url" class="h-3 w-3 text-slate-400" />
+                        </div>
+                        <div class="flex shrink-0 items-center gap-0.5 opacity-0 transition group-hover:opacity-100">
+                            <button
+                                type="button"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                :title="poster.is_active ? 'Nyahaktifkan' : 'Aktifkan'"
+                                @click="router.post(`/admin/posters/${poster.id}/toggle`, {}, { preserveScroll: true, preserveState: true })"
+                            >
+                                <ToggleRight v-if="poster.is_active" class="h-3.5 w-3.5 text-emerald-500" />
+                                <ToggleLeft v-else class="h-3.5 w-3.5" />
+                            </button>
+                            <Link
+                                :href="`/admin/posters/${poster.id}/edit`"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                            >
+                                <Pencil class="h-3.5 w-3.5" />
+                            </Link>
+                            <button
+                                type="button"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+                                @click="deleteTarget = poster.id"
+                            >
+                                <Trash2 class="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <EmptyState v-if="posters.data.length === 0" title="Tiada poster." description="Poster dan banner yang ditambah akan dipaparkan di sini." compact />
-
-            <DataTable v-else :columns="columns" :rows="posters.data">
-                <template #cell-image="{ row }">
-                    <img v-if="row.image_url" :src="row.image_url" :alt="row.title" class="h-12 w-20 rounded-lg object-cover ring-1 ring-slate-200" />
-                    <div v-else class="flex h-12 w-20 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-400">Tiada</div>
-                </template>
-                <template #cell-type="{ row }">
-                    <Badge variant="outline">{{ typeLabel(row.type) }}</Badge>
-                </template>
-                <template #cell-audience="{ row }">
-                    <span class="text-sm text-slate-600">{{ audienceLabel(row.audience) }}</span>
-                </template>
-                <template #cell-active="{ row }">
-                    <StatusBadge :status="row.is_active ? 'active' : 'inactive'" />
-                </template>
-                <template #cell-actions="{ row }">
-                    <AdminRowActions :actions="getActions(row)" />
-                </template>
-            </DataTable>
         </section>
 
         <ConfirmDialog
