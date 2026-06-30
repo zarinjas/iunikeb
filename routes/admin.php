@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\AiKnowledgeController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\PosterController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Support\AccessControl;
 use Illuminate\Support\Facades\Route;
@@ -527,6 +528,26 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::delete('/units/{unit}', [UnitController::class, 'destroy'])
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_UNITS)
             ->name('units.destroy');
+
+        // Posters
+        Route::get('/posters', [PosterController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.index');
+        Route::get('/posters/create', [PosterController::class, 'create'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.create');
+        Route::post('/posters', [PosterController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.store');
+        Route::get('/posters/{poster}/edit', [PosterController::class, 'edit'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.edit');
+        Route::match(['put', 'patch'], '/posters/{poster}', [PosterController::class, 'update'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.update');
+        Route::delete('/posters/{poster}', [PosterController::class, 'destroy'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_POSTERS)
+            ->name('posters.destroy');
 
         // Staff
         Route::get('/staff', [StaffController::class, 'index'])

@@ -124,6 +124,8 @@ class AccessControl
 
     public const PERMISSION_MANAGE_AI_KNOWLEDGE = 'manage_ai_knowledge';
 
+    public const PERMISSION_MANAGE_POSTERS = 'manage_posters';
+
     public static function roles(): array
     {
         return [
@@ -193,6 +195,7 @@ class AccessControl
             self::PERMISSION_EDIT_CARUMAN,
             self::PERMISSION_VIEW_AI_KNOWLEDGE,
             self::PERMISSION_MANAGE_AI_KNOWLEDGE,
+            self::PERMISSION_MANAGE_POSTERS,
         ];
     }
 
@@ -255,6 +258,7 @@ class AccessControl
                 self::PERMISSION_EDIT_CARUMAN,
                 self::PERMISSION_VIEW_AI_KNOWLEDGE,
                 self::PERMISSION_MANAGE_AI_KNOWLEDGE,
+                self::PERMISSION_MANAGE_POSTERS,
             ],
             self::ROLE_MEMBER => [
                 self::PERMISSION_MEMBER_ACCESS,

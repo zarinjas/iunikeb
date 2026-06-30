@@ -138,8 +138,14 @@ class HandleInertiaRequests extends Middleware
                 'label' => 'Media',
                 'href' => route('admin.media.index'),
                 'icon' => 'Image',
-                'permission' => AccessControl::PERMISSION_VIEW_MEDIA,
-                'active_patterns' => ['/admin/media'],
+                'active_patterns' => [
+                    '/admin/media',
+                    '/admin/posters', '/admin/posters/*',
+                ],
+                'children' => [
+                    ['label' => 'Pustaka Media', 'href' => route('admin.media.index'), 'permission' => AccessControl::PERMISSION_VIEW_MEDIA],
+                    ['label' => 'Poster & Banner', 'href' => route('admin.posters.index'), 'permission' => AccessControl::PERMISSION_MANAGE_POSTERS],
+                ],
             ],
             [
                 'label' => 'Program & Kehadiran',

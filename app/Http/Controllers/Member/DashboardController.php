@@ -9,6 +9,7 @@ use App\Models\FormSubmission;
 use App\Models\MemberContribution;
 use App\Models\MembershipApplication;
 use App\Models\OnlineForm;
+use App\Models\Poster;
 use App\Models\Program;
 use App\Models\ProgramRsvp;
 use App\Services\MemberCardService;
@@ -36,9 +37,37 @@ class DashboardController extends MemberPortalController
         $financingSummary = $member ? $this->financingSummary($member) : null;
         $caruman = $member ? $this->carumanSummary($member, $cooperativeId) : null;
 
-        $banners = [];
+        $banners = Poster::query()
+            ->where('cooperative_id', $cooperativeId)
+            ->banners()
+            ->active()
+            ->whereIn('audience', ['members', 'both'])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Poster $p) => [
+                'id' => $p->id,
+                'title' => $p->title,
+                'alt_text' => $p->alt_text,
+                'image_url' => $p->imageUrl(),
+                'link_url' => $p->link_url,
+            ])
+            ->all();
 
-        $posters = [];
+        $posters = Poster::query()
+            ->where('cooperative_id', $cooperativeId)
+            ->posters()
+            ->active()
+            ->whereIn('audience', ['members', 'both'])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Poster $p) => [
+                'id' => $p->id,
+                'title' => $p->title,
+                'alt_text' => $p->alt_text,
+                'image_url' => $p->imageUrl(),
+                'link_url' => $p->link_url,
+            ])
+            ->all();
 
         $forms = OnlineForm::query()
             ->published()

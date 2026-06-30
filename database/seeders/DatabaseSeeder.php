@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $this->call(FinancingDemoSeeder::class);
         $this->call(ProgramDemoSeeder::class);
         $this->call(AnsuranMudahDemoSeeder::class);
+        $this->call(PosterDemoSeeder::class);
 
         $cooperativeId = Cooperative::query()
             ->where('slug', 'koperasi-unikeb')
