@@ -46,6 +46,8 @@ ssh "$VPS_HOST" << EOF
 
   echo "--- Final permissions ---"
   chown -R admin:admin .
+  chown www-data:www-data database/database.sqlite
+  chmod 664 database/database.sqlite
   chmod -R 775 storage bootstrap/cache
 
   echo "✓ Deploy selesai!"
