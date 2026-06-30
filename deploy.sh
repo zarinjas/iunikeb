@@ -20,12 +20,11 @@ ssh "$VPS_HOST" << EOF
   echo "--- Bersihkan hot file ---"
   rm -f public/hot
 
-  echo "--- Bersihkan merge conflict lama & pull ---"
+  echo "--- Sync dengan GitHub (reset-hard) ---"
   git merge --abort 2>/dev/null || true
-  git checkout --theirs database/database.sqlite 2>/dev/null || true
-  git clean -fd database/database.sqlite 2>/dev/null || true
   git stash push -m "auto-stash-sebelum-deploy" 2>/dev/null || true
-  git pull origin $BRANCH
+  git fetch origin $BRANCH
+  git reset --hard origin/$BRANCH
   git stash pop 2>/dev/null || true
 
   echo "--- Install PHP deps ---"
