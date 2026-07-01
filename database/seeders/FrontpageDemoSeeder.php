@@ -17,149 +17,146 @@ class FrontpageDemoSeeder extends Seeder
 
         $coopId = $cooperative->id;
 
-        // Hero
-        $hero = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'hero'],
-            ['title' => 'Hero Slider', 'is_active' => true]
+        $this->seedHeroSection($coopId);
+        $this->seedStatsSection($coopId);
+        $this->seedServicesSection($coopId);
+        $this->seedBenefitSection($coopId);
+        $this->seedBusinessSection($coopId);
+        $this->seedPromotionSection($coopId);
+        $this->seedMembershipSection($coopId);
+        $this->seedMemberPopupSection($coopId);
+        $this->seedHeaderMenu($coopId);
+    }
+
+    private function section(int $coopId, string $key, string $title, ?string $subtitle = null): FrontpageSection
+    {
+        return FrontpageSection::updateOrCreate(
+            ['cooperative_id' => $coopId, 'key' => $key],
+            ['title' => $title, 'subtitle' => $subtitle, 'is_active' => true]
         );
-        $hero->allItems()->delete();
-        FrontpageSectionItem::create([
-            'section_id' => $hero->id, 'sort_order' => 1, 'is_active' => true,
+    }
+
+    private function item(FrontpageSection $section, int $sortOrder, array $data): void
+    {
+        FrontpageSectionItem::firstOrCreate(
+            ['section_id' => $section->id, 'sort_order' => $sortOrder],
+            $data
+        );
+    }
+
+    private function seedHeroSection(int $coopId): void
+    {
+        $section = $this->section($coopId, 'hero', 'Hero Slider');
+        $this->item($section, 1, [
+            'is_active' => true,
             'subtitle' => 'Koperasi Unikeb Berhad',
             'title' => 'Platform Digital Koperasi Moden',
             'description' => 'Urus keahlian, pengumuman, dokumen dan perkhidmatan koperasi dalam satu platform yang mudah dan pantas.',
             'button_text' => 'Ketahui Lebih Lanjut',
             'button_url' => '/tentang-kami',
         ]);
+    }
 
-        // Stats
-        $stats = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'stats'],
-            ['title' => 'Statistik', 'is_active' => true]
-        );
-        $stats->allItems()->delete();
+    private function seedStatsSection(int $coopId): void
+    {
+        $section = $this->section($coopId, 'stats', 'Statistik');
         foreach ([
-            ['value' => '26,000+', 'title' => 'Keanggotaan Aktif', 'icon' => 'Users'],
-            ['value' => '7', 'title' => 'Perniagaan Milik Koperasi', 'icon' => 'Store'],
-            ['value' => 'RM34.7 Juta', 'title' => 'Jumlah Aset', 'icon' => 'TrendingUp'],
-            ['value' => 'Sejak 1996', 'title' => 'Ditubuhkan', 'icon' => 'CalendarDays'],
-        ] as $i => $s) {
-            FrontpageSectionItem::create([
-                'section_id' => $stats->id, 'sort_order' => $i + 1, 'is_active' => true,
-                'value' => $s['value'], 'title' => $s['title'], 'icon' => $s['icon'],
-            ]);
+            1 => ['value' => '26,000+', 'title' => 'Keanggotaan Aktif', 'icon' => 'Users'],
+            2 => ['value' => '7', 'title' => 'Perniagaan Milik Koperasi', 'icon' => 'Store'],
+            3 => ['value' => 'RM34.7 Juta', 'title' => 'Jumlah Aset', 'icon' => 'TrendingUp'],
+            4 => ['value' => 'Sejak 1996', 'title' => 'Ditubuhkan', 'icon' => 'CalendarDays'],
+        ] as $order => $s) {
+            $this->item($section, $order, $s);
         }
+    }
 
-        // Services
-        $services = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'services'],
-            ['title' => 'Perkhidmatan Koperasi', 'subtitle' => 'Akses perkhidmatan utama koperasi dengan lebih mudah.', 'is_active' => true]
-        );
-        $services->allItems()->delete();
+    private function seedServicesSection(int $coopId): void
+    {
+        $section = $this->section($coopId, 'services', 'Perkhidmatan Koperasi', 'Akses perkhidmatan utama koperasi dengan lebih mudah.');
         foreach ([
-            ['title' => 'Pembiayaan Anggota', 'description' => 'Permohonan pembiayaan secara digital dengan proses yang pantas.', 'icon' => 'HandCoins'],
-            ['title' => 'Simpanan & Syer', 'description' => 'Urus simpanan dan syer koperasi dengan mudah.', 'icon' => 'Wallet'],
-            ['title' => 'Kebajikan Anggota', 'description' => 'Perlindungan dan manfaat tambahan untuk kebajikan ahli.', 'icon' => 'ShieldCheck'],
-        ] as $i => $s) {
-            FrontpageSectionItem::create([
-                'section_id' => $services->id, 'sort_order' => $i + 1, 'is_active' => true,
-                'title' => $s['title'], 'description' => $s['description'], 'icon' => $s['icon'],
-            ]);
+            1 => ['title' => 'Pembiayaan Anggota', 'description' => 'Permohonan pembiayaan secara digital dengan proses yang pantas.', 'icon' => 'HandCoins'],
+            2 => ['title' => 'Simpanan & Syer', 'description' => 'Urus simpanan dan syer koperasi dengan mudah.', 'icon' => 'Wallet'],
+            3 => ['title' => 'Kebajikan Anggota', 'description' => 'Perlindungan dan manfaat tambahan untuk kebajikan ahli.', 'icon' => 'ShieldCheck'],
+        ] as $order => $s) {
+            $this->item($section, $order, $s);
         }
+    }
 
-        // Benefit
-        $benefit = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'benefit'],
-            ['title' => 'Manfaat Ahli', 'subtitle' => 'Nikmati pelbagai manfaat sebagai ahli koperasi.', 'is_active' => true]
-        );
-        $benefit->allItems()->delete();
+    private function seedBenefitSection(int $coopId): void
+    {
+        $section = $this->section($coopId, 'benefit', 'Manfaat Ahli', 'Nikmati pelbagai manfaat sebagai ahli koperasi.');
         foreach ([
-            ['title' => 'Kuasa Membeli', 'description' => 'Beli barangan keperluan pada harga lebih rendah.', 'icon' => 'ShoppingBag'],
-            ['title' => 'Manfaat Kewangan', 'description' => 'Akses kepada pembiayaan dan simpanan eksklusif.', 'icon' => 'Banknote'],
-            ['title' => 'Peluang Perniagaan', 'description' => 'Sertai jaringan perniagaan koperasi.', 'icon' => 'Store'],
-            ['title' => 'Kebajikan Ahli', 'description' => 'Manfaat kebajikan dan perlindungan untuk ahli.', 'icon' => 'HeartHandshake'],
-        ] as $i => $s) {
-            FrontpageSectionItem::create([
-                'section_id' => $benefit->id, 'sort_order' => $i + 1, 'is_active' => true,
-                'title' => $s['title'], 'description' => $s['description'], 'icon' => $s['icon'],
-            ]);
+            1 => ['title' => 'Kuasa Membeli', 'description' => 'Beli barangan keperluan pada harga lebih rendah.', 'icon' => 'ShoppingBag'],
+            2 => ['title' => 'Manfaat Kewangan', 'description' => 'Akses kepada pembiayaan dan simpanan eksklusif.', 'icon' => 'Banknote'],
+            3 => ['title' => 'Peluang Perniagaan', 'description' => 'Sertai jaringan perniagaan koperasi.', 'icon' => 'Store'],
+            4 => ['title' => 'Kebajikan Ahli', 'description' => 'Manfaat kebajikan dan perlindungan untuk ahli.', 'icon' => 'HeartHandshake'],
+        ] as $order => $s) {
+            $this->item($section, $order, $s);
         }
+    }
 
-        // Business
-        $business = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'business'],
-            ['title' => 'Perniagaan Koperasi', 'subtitle' => 'Cabang perniagaan milik koperasi.', 'is_active' => true]
-        );
-        $business->allItems()->delete();
+    private function seedBusinessSection(int $coopId): void
+    {
+        $section = $this->section($coopId, 'business', 'Perniagaan Koperasi', 'Cabang perniagaan milik koperasi.');
         foreach ([
-            ['title' => 'Kedai Koperasi', 'description' => 'Peruncitan dan barangan keperluan.'],
-            ['title' => 'Hartanah & Sewaan', 'description' => 'Pelaburan hartanah strategik.'],
-            ['title' => 'Stesen Minyak', 'description' => 'Operasi stesen minyak.'],
-            ['title' => 'E-Dagang', 'description' => 'Platform jualan online.'],
-            ['title' => 'Bilik Seminar', 'description' => 'Sewaan ruang acara.'],
-        ] as $i => $s) {
-            FrontpageSectionItem::create([
-                'section_id' => $business->id, 'sort_order' => $i + 1, 'is_active' => true,
-                'title' => $s['title'], 'description' => $s['description'],
-            ]);
+            1 => ['title' => 'Kedai Koperasi', 'description' => 'Peruncitan dan barangan keperluan.'],
+            2 => ['title' => 'Hartanah & Sewaan', 'description' => 'Pelaburan hartanah strategik.'],
+            3 => ['title' => 'Stesen Minyak', 'description' => 'Operasi stesen minyak.'],
+            4 => ['title' => 'E-Dagang', 'description' => 'Platform jualan online.'],
+            5 => ['title' => 'Bilik Seminar', 'description' => 'Sewaan ruang acara.'],
+        ] as $order => $s) {
+            $this->item($section, $order, $s);
         }
+    }
 
-        // Promotion
-        $promotion = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'promotion'],
-            ['title' => 'Promosi', 'is_active' => true]
-        );
-        // Items for promotion can be managed via admin
+    private function seedPromotionSection(int $coopId): void
+    {
+        $this->section($coopId, 'promotion', 'Promosi');
+    }
 
-        // Membership
-        $membership = FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'membership'],
-            ['title' => 'Sertai Koperasi Kami', 'subtitle' => 'Rebut peluang menjadi sebahagian daripada komuniti koperasi yang berkembang.', 'is_active' => true]
-        );
-        $membership->allItems()->delete();
+    private function seedMembershipSection(int $coopId): void
+    {
+        $section = $this->section($coopId, 'membership', 'Sertai Koperasi Kami', 'Rebut peluang menjadi sebahagian daripada komuniti koperasi yang berkembang.');
         foreach ([
-            ['value' => '26,000+', 'title' => 'Keanggotaan Aktif'],
-            ['value' => 'RM34.7 Juta', 'title' => 'Jumlah Aset'],
-            ['value' => 'RM12.5 Juta', 'title' => 'Modal Syer'],
-            ['value' => 'RM18.2 Juta', 'title' => 'Simpanan'],
-        ] as $i => $s) {
-            FrontpageSectionItem::create([
-                'section_id' => $membership->id, 'sort_order' => $i + 1, 'is_active' => true,
-                'value' => $s['value'], 'title' => $s['title'],
-            ]);
+            1 => ['value' => '26,000+', 'title' => 'Keanggotaan Aktif'],
+            2 => ['value' => 'RM34.7 Juta', 'title' => 'Jumlah Aset'],
+            3 => ['value' => 'RM12.5 Juta', 'title' => 'Modal Syer'],
+            4 => ['value' => 'RM18.2 Juta', 'title' => 'Simpanan'],
+        ] as $order => $s) {
+            $this->item($section, $order, $s);
         }
+    }
 
-        // Footer
-        FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'member_popup'],
-            ['title' => 'Selamat Datang ke Portal Ahli!', 'is_active' => true]
-        );
-
-        // Member Popup
-        $popup = FrontpageSection::updateOrCreate(
+    private function seedMemberPopupSection(int $coopId): void
+    {
+        $section = FrontpageSection::updateOrCreate(
             ['cooperative_id' => $coopId, 'key' => 'member_popup'],
             ['title' => 'Selamat Datang ke Portal Ahli!', 'is_active' => false]
         );
-        $popup->allItems()->delete();
-        FrontpageSectionItem::create([
-            'section_id' => $popup->id, 'sort_order' => 1, 'is_active' => true,
+        $this->item($section, 1, [
+            'is_active' => true,
             'description' => 'Nikmati pelbagai kemudahan digital koperasi melalui portal ahli. Kemaskini profil, mohon pembiayaan, dan urus keahlian anda.',
             'button_text' => 'Teruskan',
             'button_url' => '/member/dashboard',
         ]);
+    }
 
-        // Header Menu
-        Menu::where('cooperative_id', $coopId)->delete();
-        $menuItems = [
-            ['location' => 'header', 'label' => 'Utama', 'url' => '/', 'sort_order' => 1],
-            ['location' => 'header', 'label' => 'Profil', 'url' => '/profil', 'sort_order' => 2],
-            ['location' => 'header', 'label' => 'Perkhidmatan', 'url' => '/perkhidmatan', 'sort_order' => 3],
-            ['location' => 'header', 'label' => 'Perniagaan', 'url' => '/perniagaan', 'sort_order' => 4],
-            ['location' => 'header', 'label' => 'Maklumat', 'url' => '/maklumat', 'sort_order' => 5],
-            ['location' => 'header', 'label' => 'Hubungi', 'url' => '/hubungi', 'sort_order' => 6],
+    private function seedHeaderMenu(int $coopId): void
+    {
+        $items = [
+            ['label' => 'Utama', 'url' => '/', 'sort_order' => 1],
+            ['label' => 'Profil', 'url' => '/profil', 'sort_order' => 2],
+            ['label' => 'Perkhidmatan', 'url' => '/perkhidmatan', 'sort_order' => 3],
+            ['label' => 'Perniagaan', 'url' => '/perniagaan', 'sort_order' => 4],
+            ['label' => 'Maklumat', 'url' => '/maklumat', 'sort_order' => 5],
+            ['label' => 'Hubungi', 'url' => '/hubungi', 'sort_order' => 6],
         ];
-        foreach ($menuItems as $item) {
-            Menu::create(array_merge($item, ['cooperative_id' => $coopId, 'is_active' => true]));
+
+        foreach ($items as $item) {
+            Menu::firstOrCreate(
+                ['cooperative_id' => $coopId, 'location' => 'header', 'url' => $item['url']],
+                ['label' => $item['label'], 'sort_order' => $item['sort_order'], 'is_active' => true]
+            );
         }
     }
 }
