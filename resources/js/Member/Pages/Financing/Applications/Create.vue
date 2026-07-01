@@ -482,43 +482,14 @@ const submit = () => {
                                 </div>
                             </template>
                         </FormSection>
+                        <FinancingEstimatorCard
+                            v-if="section.fields?.some(f => f.type === 'financing_amount')"
+                            :amount="fields.amount_requested"
+                            :tenure-months="fields.tenure_months"
+                            :annual-rate-percent="resolveRate(Number(fields.tenure_months) || 0)"
+                            class="mt-6"
+                        />
                     </template>
-
-                    <!-- Financing Estimator Card -->
-                    <FinancingEstimatorCard
-                        :amount="fields.amount_requested"
-                        :tenure-months="fields.tenure_months"
-                        :annual-rate-percent="resolveRate(Number(fields.tenure_months) || 0)"
-                    />
-
-                    <!-- Supporting Document Uploads -->
-                    <FormSection v-if="selectedProduct?.supporting_documents?.length" title="Dokumen Sokongan" description="Muat naik dokumen sokongan yang diperlukan." :columns="1">
-                        <div v-for="doc in selectedProduct.supporting_documents" :key="doc.id" class="space-y-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-medium text-slate-800">{{ doc.name }}</span>
-                                <span v-if="doc.is_required" class="text-red-500 text-xs">*</span>
-                                <span class="text-[10px] text-slate-400">{{ doc.accepted_types }} · {{ doc.max_size_kb }}KB</span>
-                            </div>
-                            <template v-if="doc.mode === 'monthly'">
-                                <div v-for="i in doc.count" :key="i" class="flex items-center gap-2">
-                                    <span class="text-xs text-slate-400 w-10">{{ i }}/{{ doc.count }}</span>
-                                    <input type="file"
-                                        :accept="doc.accepted_types.split(',').map(t => '.' + t.trim()).join(',')"
-                                        class="flex-1 text-xs text-slate-500 file:mr-2 file:rounded file:border-0 file:bg-teal-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-teal-700"
-                                        @change="(e) => {
-                                            if (!supportingDocFiles[doc.id]) supportingDocFiles[doc.id] = {};
-                                            supportingDocFiles[doc.id][i] = e.target.files?.[0];
-                                        }" />
-                                </div>
-                            </template>
-                            <template v-else>
-                                <input type="file"
-                                    :accept="doc.accepted_types.split(',').map(t => '.' + t.trim()).join(',')"
-                                    class="w-full text-xs text-slate-500 file:mr-2 file:rounded file:border-0 file:bg-teal-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-teal-700"
-                                    @change="(e) => { supportingDocFiles[doc.id] = [e.target.files?.[0]]; }" />
-                            </template>
-                        </div>
-                    </FormSection>
 
                     <!-- Tujuan Pembiayaan (sentiasa dipapar) -->
                     <FormSection title="Tujuan Pembiayaan" description="Nyatakan tujuan pembiayaan anda dengan jelas." :columns="1">
@@ -581,6 +552,43 @@ const submit = () => {
                                 <p v-if="formErrors[cf.key]" class="text-sm text-red-600">{{ formErrors[cf.key] }}</p>
                             </div>
                         </template>
+                    </FormSection>
+
+                    <!-- Financing Estimator (when using core fields / no dynamic amount) -->
+                    <FinancingEstimatorCard
+                        v-if="!hasBothFinancingFields"
+                        :amount="fields.amount_requested"
+                        :tenure-months="fields.tenure_months"
+                        :annual-rate-percent="resolveRate(Number(fields.tenure_months) || 0)"
+                    />
+
+                    <!-- Supporting Document Uploads -->
+                    <FormSection v-if="selectedProduct?.supporting_documents?.length" title="Dokumen Sokongan" description="Muat naik dokumen sokongan yang diperlukan." :columns="1">
+                        <div v-for="doc in selectedProduct.supporting_documents" :key="doc.id" class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-slate-800">{{ doc.name }}</span>
+                                <span v-if="doc.is_required" class="text-red-500 text-xs">*</span>
+                                <span class="text-[10px] text-slate-400">{{ doc.accepted_types }} · {{ doc.max_size_kb }}KB</span>
+                            </div>
+                            <template v-if="doc.mode === 'monthly'">
+                                <div v-for="i in doc.count" :key="i" class="flex items-center gap-2">
+                                    <span class="text-xs text-slate-400 w-10">{{ i }}/{{ doc.count }}</span>
+                                    <input type="file"
+                                        :accept="doc.accepted_types.split(',').map(t => '.' + t.trim()).join(',')"
+                                        class="flex-1 text-xs text-slate-500 file:mr-2 file:rounded file:border-0 file:bg-teal-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-teal-700"
+                                        @change="(e) => {
+                                            if (!supportingDocFiles[doc.id]) supportingDocFiles[doc.id] = {};
+                                            supportingDocFiles[doc.id][i] = e.target.files?.[0];
+                                        }" />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <input type="file"
+                                    :accept="doc.accepted_types.split(',').map(t => '.' + t.trim()).join(',')"
+                                    class="w-full text-xs text-slate-500 file:mr-2 file:rounded file:border-0 file:bg-teal-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-teal-700"
+                                    @change="(e) => { supportingDocFiles[doc.id] = [e.target.files?.[0]]; }" />
+                            </template>
+                        </div>
                     </FormSection>
 
                     <!-- Penjamin -->

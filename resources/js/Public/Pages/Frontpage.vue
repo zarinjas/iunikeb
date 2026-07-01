@@ -1,24 +1,65 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     ArrowRight, Award, BadgePercent, Banknote, Building, Building2, CalendarDays,
-    Check, FileText, Gift, HandCoins,
-    HeartHandshake, Landmark, Play,
+    Check, ChevronDown, ChevronRight, FileText, Gift, HandCoins,
+    HeartHandshake, Landmark, LogIn, Mail, MapPin, Menu, Phone, Play,
     ShieldCheck, ShoppingBag, Smartphone, Star, Store, TrendingUp,
-    UserRound, Users, Wallet, Zap
+    UserRound, Users, Wallet, X, Zap
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import AppLogo from '@/Shared/Components/AppLogo.vue';
 import FlashToast from '@/Shared/Components/FlashToast.vue';
 import PublicFooter from '@/Shared/Components/PublicFooter.vue';
-import PublicNavbar from '@/Shared/Components/PublicNavbar.vue';
 
+const page = usePage();
 const props = defineProps({
     sections: { type: Object, required: true },
     menus: { type: Object, required: true },
 });
 
-const headerMenus = computed(() => props.menus?.header ?? []);
-const footerMenusObj = computed(() => props.menus?.footer ?? {});
+const cooperative = computed(() => page.props.appSettings?.cooperative ?? {});
+const faviconUrl = computed(() => cooperative.value.favicon_url);
+const mobileMenuOpen = ref(false);
+const activeMobileMenu = ref(null);
+const activeDropdown = ref(null);
+const navRef = ref(null);
+const scrolled = ref(false);
+
+function toggleDropdown(label) { activeDropdown.value = activeDropdown.value === label ? null : label; }
+function toggleMobileMenu(label) { activeMobileMenu.value = activeMobileMenu.value === label ? null : label; }
+function closeAllDropdowns() { activeDropdown.value = null; }
+function closeMobileMenu() {
+    mobileMenuOpen.value = false;
+    activeMobileMenu.value = null;
+}
+
+function handleScroll() { scrolled.value = window.scrollY > 50; }
+function handleKeydown(event) {
+    if (event.key === 'Escape') closeMobileMenu();
+}
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('keydown', handleKeydown);
+    handleScroll();
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+    window.removeEventListener('scroll', handleScroll);
+    document.removeEventListener('keydown', handleKeydown);
+    document.body.style.overflow = '';
+});
+
+watch(mobileMenuOpen, (isOpen) => {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+});
+
+function handleClickOutside(event) {
+    if (navRef.value && !navRef.value.contains(event.target)) closeAllDropdowns();
+}
 
 // Section data helpers
 const hero = computed(() => props.sections?.hero ?? { items: [] });
@@ -63,6 +104,17 @@ const business = computed(() => props.sections?.business ?? { items: [] });
 const promotion = computed(() => props.sections?.promotion ?? { items: [] });
 const membership = computed(() => props.sections?.membership ?? { items: [] });
 
+// Static navigation fallback
+const navItems = computed(() => {
+    if (props.menus?.header?.length) return props.menus.header;
+    return [
+        { label: 'Utama', url: '/' },
+        { label: 'Pengumuman', url: '/pengumuman' },
+        { label: 'Borang Online', url: '/forms' },
+        { label: 'Ansuran Mudah', url: '/ansuran' },
+    ];
+});
+
 // Icon resolver — maps string names to Lucide components
 const iconMap = {
     Users, Store, TrendingUp, CalendarDays, HandCoins, Wallet, ShieldCheck,
@@ -77,8 +129,133 @@ function resolveIcon(name) {
 </script>
 
 <template>
+    <Head>
+        <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
+    </Head>
+
     <div class="min-h-screen bg-white text-slate-800">
-        <PublicNavbar :menus="headerMenus" variant="hero" />
+        <!-- HEADER -->
+        <header
+            class="fixed inset-x-0 top-0 z-50 transition-all duration-300"
+            :class="scrolled ? 'bg-white shadow-sm border-b border-slate-200' : 'bg-transparent'"
+        >
+            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
+                <AppLogo :name="cooperative.name" :logo-url="cooperative.logo_url" href="/" size="xl" :show-text="false" />
+
+                <nav ref="navRef" class="hidden items-center gap-1 lg:flex">
+                    <div v-for="item in navItems" :key="item.label" class="relative">
+                        <button
+                            v-if="item.children?.length"
+                            type="button"
+                            class="rounded-full px-3 py-2 text-sm font-medium transition-colors"
+                            :class="scrolled ? 'text-slate-600 hover:text-teal-700 hover:bg-teal-50' : 'text-white/90 hover:text-white hover:bg-white/10'"
+                            @click.stop="toggleDropdown(item.label)"
+                        >
+                            {{ item.label }}
+                            <ChevronDown class="ml-1 inline h-4 w-4" />
+                        </button>
+                        <Link
+                            v-else
+                            :href="item.url || '#'"
+                            class="rounded-full px-3 py-2 text-sm font-medium transition-colors"
+                            :class="scrolled ? 'text-slate-600 hover:text-teal-700 hover:bg-teal-50' : 'text-white/90 hover:text-white hover:bg-white/10'"
+                        >
+                            {{ item.label }}
+                        </Link>
+                        <div
+                            v-if="item.children?.length && activeDropdown === item.label"
+                            class="absolute left-0 top-full z-50 mt-1 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+                        >
+                            <Link
+                                v-for="child in item.children"
+                                :key="child.url"
+                                :href="child.url || '#'"
+                                class="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-800"
+                                @click="closeAllDropdowns"
+                            >
+                                {{ child.label }}
+                            </Link>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="hidden items-center gap-3 lg:flex">
+                    <a
+                        href="/membership/apply"
+                        class="rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0d7d73]"
+                        :class="scrolled ? 'bg-[#0F8F83]' : 'bg-[#0F8F83]'"
+                    >
+                        Mohon Jadi Ahli
+                    </a>
+                    <Link
+                        href="/admin/login"
+                        class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
+                        :class="scrolled
+                            ? 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                            : 'border-white/30 text-white hover:bg-white/10'"
+                    >
+                        <LogIn class="h-4 w-4" />
+                        Log Masuk
+                    </Link>
+                </div>
+
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-full border transition lg:hidden"
+                    :class="scrolled ? 'border-slate-200 bg-white text-slate-700 shadow-sm' : 'border-white/25 bg-slate-950/10 text-white backdrop-blur-sm'"
+                    aria-label="Buka menu navigasi"
+                    aria-controls="mobile-navigation"
+                    :aria-expanded="mobileMenuOpen"
+                    @click="mobileMenuOpen = true"
+                >
+                    <Menu class="h-6 w-6" />
+                </button>
+            </div>
+        </header>
+
+        <!-- Mobile Menu -->
+        <div v-if="mobileMenuOpen" class="fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm lg:hidden" @click="closeMobileMenu">
+            <aside id="mobile-navigation" class="ml-auto flex h-full w-[min(90vw,24rem)] flex-col overflow-hidden bg-slate-50 shadow-2xl" aria-label="Navigasi mobile" @click.stop>
+                <div class="relative overflow-hidden bg-gradient-to-br from-[#082c3b] to-[#0F766E] px-5 pb-5 pt-4 text-white">
+                    <div class="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/10" />
+                    <div class="relative flex items-center justify-between">
+                        <AppLogo :name="cooperative.name" :logo-url="cooperative.logo_url" href="/" size="sm" :dark="false" />
+                        <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20" aria-label="Tutup menu" @click="closeMobileMenu">
+                            <X class="h-5 w-5" />
+                        </button>
+                    </div>
+                    <div class="relative mt-5">
+                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-teal-200">Menu Utama</p>
+                        <p class="mt-1 text-sm text-white/70">Akses maklumat dan perkhidmatan koperasi.</p>
+                    </div>
+                </div>
+                <nav class="flex-1 space-y-1.5 overflow-y-auto px-4 py-5">
+                    <div v-for="item in navItems" :key="item.label">
+                        <button v-if="item.children?.length" type="button" class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-slate-700 transition hover:bg-white hover:text-teal-800 hover:shadow-sm" :aria-expanded="activeMobileMenu === item.label" @click="toggleMobileMenu(item.label)">
+                            {{ item.label }}
+                            <ChevronDown class="h-4 w-4 text-slate-400 transition-transform" :class="activeMobileMenu === item.label ? 'rotate-180 text-teal-600' : ''" />
+                        </button>
+                        <Link v-else :href="item.url || '#'" class="flex items-center justify-between rounded-xl px-4 py-3 text-[15px] font-semibold text-slate-700 transition hover:bg-white hover:text-teal-800 hover:shadow-sm" @click="closeMobileMenu">
+                            {{ item.label }}
+                            <ChevronRight class="h-4 w-4 text-slate-300" />
+                        </Link>
+                        <div v-if="item.children?.length && activeMobileMenu === item.label" class="mx-2 mb-2 mt-1 space-y-1 border-l-2 border-teal-200 pl-3">
+                            <Link v-for="child in item.children" :key="child.url || child.label" :href="child.url || '#'" class="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-teal-50 hover:text-teal-800" @click="closeMobileMenu">
+                                {{ child.label }}
+                            </Link>
+                        </div>
+                    </div>
+                </nav>
+                <div class="border-t border-slate-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                    <Link href="/membership/apply" class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F8F83] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d7d73]" @click="closeMobileMenu">
+                        Mohon Jadi Ahli <ArrowRight class="h-4 w-4" />
+                    </Link>
+                    <Link href="/admin/login" class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50" @click="closeMobileMenu">
+                        <LogIn class="h-4 w-4" /> Log Masuk
+                    </Link>
+                </div>
+            </aside>
+        </div>
 
         <!-- HERO SECTION -->
         <section class="relative h-[560px] overflow-hidden sm:h-[650px] lg:h-[760px]">
@@ -313,7 +490,7 @@ function resolveIcon(name) {
         </section>
 
         <!-- FOOTER -->
-        <PublicFooter :footer-menus="footerMenusObj" />
+        <PublicFooter :footer-menus="props.menus?.footer ?? {}" />
     </div>
 
     <FlashToast />

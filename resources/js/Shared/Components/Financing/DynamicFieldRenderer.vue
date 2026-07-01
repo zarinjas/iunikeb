@@ -40,6 +40,14 @@ const addressValue = computed(() => {
 const isFinancingAmount = computed(() => props.field.type === 'financing_amount');
 const isFinancingTenure = computed(() => props.field.type === 'financing_tenure');
 
+const amountDisplay = computed(() => {
+  if (!isFinancingAmount.value) return '';
+  if (props.value == null || props.value === '') return '';
+  const num = Number(props.value);
+  if (isNaN(num)) return '';
+  return num.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+});
+
 const finMinAmount = computed(() => Number(props.product?.min_amount ?? 0));
 const finMaxAmount = computed(() => Number(props.product?.max_amount ?? 9999999));
 const finMinTenure = computed(() => Number(props.product?.min_tenure_months ?? 1));
@@ -67,6 +75,15 @@ function onInput(e) {
 function onNumberInput(e) {
   const v = e.target.value;
   emit('update:value', v === '' ? '' : Number(v));
+}
+
+function onAmountInput(e) {
+  const raw = e.target.value;
+  const cleaned = raw.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  const sanitized = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : cleaned;
+  const num = sanitized === '' ? '' : Number(sanitized);
+  emit('update:value', sanitized === '' ? '' : num);
 }
 
 function onCheckboxChange(optVal, checked) {
@@ -424,14 +441,15 @@ function fmtPlaceholder(val) {
       <div v-else-if="isFinancingAmount"
         class="flex items-center rounded-xl border border-slate-300"
         :class="[!isInteractive ? 'bg-slate-50' : 'bg-white focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20']">
-        <span class="pl-4 text-sm text-slate-400">RM</span>
-        <input :value="isInteractive ? value : ''"
-          type="number" min="0" step="0.01"
+        <span class="pl-4 text-sm text-slate-500 font-medium">RM</span>
+        <input :value="isInteractive ? amountDisplay : ''"
+          :type="isInteractive ? 'text' : 'number'"
+          inputmode="numeric"
           :placeholder="`${fmtPlaceholder(finMinAmount)} – ${fmtPlaceholder(finMaxAmount)}`"
           :readonly="!isInteractive"
-          class="flex-1 bg-transparent px-3 py-2.5 text-sm focus:outline-none"
+          class="flex-1 bg-transparent px-3 py-2.5 text-sm focus:outline-none tabular-nums"
           :class="!isInteractive ? 'text-slate-400' : ''"
-          @input="isInteractive ? onNumberInput($event) : null" />
+          @input="isInteractive ? onAmountInput : null" />
       </div>
 
       <!-- Financing Tenure -->
