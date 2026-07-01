@@ -21,16 +21,9 @@ ssh "$VPS_HOST" << EOF
   rm -f public/hot
 
   echo "--- Backup uploaded files ---"
-  BACKUP_DIR="/tmp/deploy-storage-backup"
-  rm -rf "$BACKUP_DIR"
-  mkdir -p "$BACKUP_DIR"
-  if [ -d storage/app/public ]; then
-    rsync -a storage/app/public/ "$BACKUP_DIR/" --exclude='.gitignore' 2>/dev/null || true
-    FILE_COUNT=$(find "$BACKUP_DIR" -type f 2>/dev/null | wc -l)
-    echo "  ✓ Backup selesai: $FILE_COUNT fail disimpan"
-  else
-    echo "  ⚠️ storage/app/public tidak wujud, backup dilangkau"
-  fi
+  rm -rf /tmp/deploy-storage-backup
+  mkdir -p /tmp/deploy-storage-backup
+  rsync -a storage/app/public/ /tmp/deploy-storage-backup/ --exclude='.gitignore' 2>/dev/null || echo "  storage/app/public tidak wujud, backup dilangkau"
 
   echo "--- Backup database ---"
   cp database/database.sqlite database/database.sqlite.bak 2>/dev/null || true
@@ -73,14 +66,8 @@ ssh "$VPS_HOST" << EOF
   php artisan storage:link --force
 
   echo "--- Restore uploaded files ---"
-  if [ -d "$BACKUP_DIR" ] && [ "$(find "$BACKUP_DIR" -type f 2>/dev/null | wc -l)" -gt 0 ]; then
-    rsync -a "$BACKUP_DIR/" storage/app/public/ 2>/dev/null || true
-    FILE_COUNT=$(find "$BACKUP_DIR" -type f 2>/dev/null | wc -l)
-    echo "  ✓ Restore selesai: $FILE_COUNT fail dipulihkan"
-  else
-    echo "  ⚠️ Tiada backup untuk diretore"
-  fi
-  rm -rf "$BACKUP_DIR" 2>/dev/null || true
+  rsync -a /tmp/deploy-storage-backup/ storage/app/public/ 2>/dev/null || true
+  rm -rf /tmp/deploy-storage-backup 2>/dev/null || true
 
   echo "--- Final permissions ---"
   chown -R admin:admin .
