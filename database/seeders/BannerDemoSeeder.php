@@ -35,15 +35,16 @@ class BannerDemoSeeder extends Seeder
                 $storage->put($filePath, $svg);
             }
 
-            Banner::query()->create([
-                'cooperative_id' => $cooperative->id,
-                'image_path' => $filePath,
-                'link_url' => $i === 0 ? route('member.financing.index') : null,
-                'sort_order' => $i,
-                'is_active' => true,
-                'created_by' => $adminId,
-                'updated_by' => $adminId,
-            ]);
+            Banner::query()->updateOrCreate(
+                ['cooperative_id' => $cooperative->id, 'image_path' => $filePath],
+                [
+                    'link_url' => $i === 0 ? route('member.financing.index') : null,
+                    'sort_order' => $i,
+                    'is_active' => true,
+                    'created_by' => $adminId,
+                    'updated_by' => $adminId,
+                ]
+            );
         }
     }
 

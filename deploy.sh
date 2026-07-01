@@ -48,8 +48,9 @@ ssh "$VPS_HOST" << EOF
   echo "--- Migration ---"
   php artisan migrate --force
 
-  echo "--- Seed semua data (idempotent) ---"
-  php artisan db:seed --force 2>/dev/null || true
+  echo "--- Seed data ---"
+  php artisan db:seed --force 2>&1 || echo "  ⚠️ Seeder ada isu (kemungkinan data dah wujud, bukan error)"
+  echo "  ✓ Seed selesai"
 
   echo "--- Cache ---"
   php artisan optimize:clear

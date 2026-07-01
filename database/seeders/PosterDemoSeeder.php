@@ -36,15 +36,16 @@ class PosterDemoSeeder extends Seeder
                 $storage->put($filePath, $svg);
             }
 
-            Poster::query()->create([
-                'cooperative_id' => $cooperative->id,
-                'image_path' => $filePath,
-                'link_url' => null,
-                'sort_order' => $i,
-                'is_active' => true,
-                'created_by' => $adminId,
-                'updated_by' => $adminId,
-            ]);
+            Poster::query()->updateOrCreate(
+                ['cooperative_id' => $cooperative->id, 'image_path' => $filePath],
+                [
+                    'link_url' => null,
+                    'sort_order' => $i,
+                    'is_active' => true,
+                    'created_by' => $adminId,
+                    'updated_by' => $adminId,
+                ]
+            );
         }
     }
 

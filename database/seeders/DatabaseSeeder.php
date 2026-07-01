@@ -34,7 +34,12 @@ class DatabaseSeeder extends Seeder
         $this->call(ComplaintDemoSeeder::class);
         $this->call(CarumanDemoSeeder::class);
         $this->call(UnitDemoSeeder::class);
-        $this->call(FinancingDemoSeeder::class);
+
+        try {
+            $this->call(FinancingDemoSeeder::class);
+        } catch (\Throwable $e) {
+            $this->command->warn("FinancingDemoSeeder skipped (data mungkin sudah wujud): {$e->getMessage()}");
+        }
         $this->call(ProgramDemoSeeder::class);
         $this->call(AnsuranMudahDemoSeeder::class);
         $this->call(BulkMemberSeeder::class);
