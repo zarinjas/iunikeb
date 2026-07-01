@@ -48,15 +48,16 @@ const sizeMap = {
         tng: 'scale-90 origin-bottom-right'
     },
     large: {
-        shell: 'max-w-[400px] aspect-[1/1.58] p-8',
-        name: 'text-[2.2rem]',
-        meta: 'text-xs',
-        value: 'text-xl',
-        qr: 'h-20 w-20',
+        shell: 'w-[320px] sm:w-[400px] max-w-full aspect-[1/1.58] p-6 sm:p-8',
+        name: 'text-[1.8rem] sm:text-[2.2rem]',
+        meta: 'text-[10px] sm:text-xs',
+        value: 'text-lg sm:text-xl',
+        qr: 'h-16 w-16 sm:h-20 sm:w-20',
         avatar: 'xl',
-        ring: 'p-2 border-[4px]',
-        logo: 'h-12 w-12',
-        tng: 'scale-100 origin-bottom-right'
+        avatarClass: '!h-24 !w-24 sm:!h-32 sm:!w-32',
+        ring: 'p-1.5 sm:p-2 border-[3px] sm:border-[4px]',
+        logo: 'h-10 w-10 sm:h-12 sm:w-12',
+        tng: 'scale-90 sm:scale-100 origin-bottom-right'
     },
 };
 
@@ -138,7 +139,7 @@ watch(() => props.card.verification_url, () => {
                             :photo-url="card.profile_photo_url"
                             :name="card.full_name"
                             :size="currentSize.avatar"
-                            class="border-4 border-teal-300 shadow-md"
+                            :class="['border-4 border-teal-300 shadow-md', currentSize.avatarClass]"
                         />
                     </div>
                 </div>
