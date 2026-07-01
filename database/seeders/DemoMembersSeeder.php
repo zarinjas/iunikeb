@@ -12,6 +12,26 @@ use Illuminate\Support\Facades\Hash;
 
 class DemoMembersSeeder extends Seeder
 {
+    private array $firstNames = [
+        'Ahmad', 'Mohd', 'Muhammad', 'Aiman', 'Amirul', 'Azman', 'Faisal', 'Hafiz',
+        'Harith', 'Haziq', 'Ikhwan', 'Irfan', 'Iskandar', 'Kamal', 'Khairul',
+        'Megat', 'Nasir', 'Nik', 'Rahim', 'Rashid', 'Saiful', 'Shahrul',
+        'Syafiq', 'Syed', 'Wan', 'Zainal', 'Zulkifli', 'Azhar',
+        'Aminah', 'Aisyah', 'Fatimah', 'Halimah', 'Khadijah', 'Mariam', 'Nurul',
+        'Siti', 'Zaiton', 'Zarina', 'Azizah', 'Farah', 'Hafizah', 'Izzati',
+        'Jamilah', 'Kartini', 'Mahani', 'Nadia', 'Noraini', 'Norsiah',
+        'Sarah', 'Suzana', 'Zaleha', 'Zainab', 'Anis', 'Balqis', 'Dalilah',
+    ];
+
+    private array $lastNames = [
+        'Abdullah', 'Abdul Rahman', 'Abdul Rahim', 'Abdul Hamid', 'Abdul Aziz',
+        'Abdul Karim', 'Abdul Malik', 'Ibrahim', 'Ismail', 'Mohd Nor',
+        'Mohd Ali', 'Mohd Yusof', 'Mohd Salleh', 'Osman', 'Rahman', 'Hashim',
+        'Hussein', 'Yahaya', 'Yaakob', 'Mat', 'Hassan', 'Hussin', 'Sulaiman',
+        'Harun', 'Idris', 'Alias', 'Bakar', 'Din', 'Jusoh', 'Kassim', 'Mahmud',
+        'Musa', 'Othman', 'Ramli', 'Said', 'Talib', 'Yusoff', 'Zainuddin',
+    ];
+
     public function run(): void
     {
         $cooperative = Cooperative::query()->where('slug', 'koperasi-unikeb')->first();
@@ -29,7 +49,8 @@ class DemoMembersSeeder extends Seeder
                 continue;
             }
 
-            $name = fake()->name();
+            $firstName = $this->firstNames[array_rand($this->firstNames)];
+            $name = $firstName.' '.$this->lastNames[array_rand($this->lastNames)];
 
             $user = User::query()->create([
                 'cooperative_id' => $cooperative->id,
