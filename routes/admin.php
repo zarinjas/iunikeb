@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\Financing\FinancingGeneratedDocumentController;
 use App\Http\Controllers\Admin\FinancingProductController;
 use App\Http\Controllers\Admin\FinancingProductSectionController;
 use App\Http\Controllers\Admin\FinancingProductFieldController;
+use App\Http\Controllers\Admin\FieldTemplateController;
 use App\Http\Controllers\Admin\FormCategoryController;
 use App\Http\Controllers\Admin\FormFieldController;
 use App\Http\Controllers\Admin\FormSectionController;
@@ -107,6 +108,16 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->name('media.destroy');
 
         // Financing
+        Route::get('/field-templates', [FieldTemplateController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)
+            ->name('admin.field-templates.index');
+        Route::post('/field-templates', [FieldTemplateController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)
+            ->name('admin.field-templates.store');
+        Route::delete('/field-templates/{template}', [FieldTemplateController::class, 'destroy'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)
+            ->name('admin.field-templates.destroy');
+
         Route::get('/financing/categories', [FinancingCategoryController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_VIEW_FINANCING)
             ->name('financing.categories.index');
