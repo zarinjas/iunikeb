@@ -103,11 +103,7 @@ function saveBenefitSettings() {
 }
 
 function saveSection() {
-    console.log('[saveSection]', { key: props.section.key, is_active: sectionForm.is_active });
-    sectionForm.put(`/admin/frontpage/sections/${props.section.key}`, {
-        onError: (e) => console.error('[saveSection] error', e),
-        onSuccess: () => console.log('[saveSection] success'),
-    });
+    sectionForm.put(`/admin/frontpage/sections/${props.section.key}`);
 }
 
 function startNewItem() {

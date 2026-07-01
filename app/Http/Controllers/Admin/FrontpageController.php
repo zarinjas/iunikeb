@@ -125,17 +125,7 @@ class FrontpageController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        \Log::debug('[frontpage-update]', [
-            'key' => $section->key,
-            'is_active_before' => $section->is_active,
-            'is_active_request' => $request->input('is_active'),
-        ]);
-
         $section->update($validated);
-
-        \Log::debug('[frontpage-update] after', [
-            'is_active_after' => $section->fresh()->is_active,
-        ]);
 
         return redirect()->back()->with('status', 'Seksyen dikemas kini.');
     }

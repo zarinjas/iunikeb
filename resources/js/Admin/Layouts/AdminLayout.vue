@@ -132,6 +132,10 @@ watch(currentPath, () => {
     if (activeParent) expandedMenus.value = new Set([...expandedMenus.value, activeParent.label]);
 }, { immediate: true });
 
+watch(() => page.url, () => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+});
+
 const currentPageTitle = computed(() => {
     for (const item of navItems.value) {
         if (item.href && currentPath.value === pathFor(item.href)) return item.label;

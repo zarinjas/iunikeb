@@ -72,6 +72,10 @@ watch(currentPath, () => {
     if (activeParent) expandedMenus.value = new Set([...expandedMenus.value, activeParent.label]);
 }, { immediate: true });
 
+watch(() => page.url, () => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+});
+
 const pageTitle = computed(() => {
     const titles = {
         'Member/Pages/Dashboard': 'Papan Pemuka',

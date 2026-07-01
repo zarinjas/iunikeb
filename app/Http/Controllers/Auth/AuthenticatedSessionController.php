@@ -42,6 +42,7 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        $request->session()->forget('popup_dismissed');
 
         return redirect()->intended($this->homeFor($request->user()));
     }
@@ -87,6 +88,7 @@ class AuthenticatedSessionController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $request->session()->forget('popup_dismissed');
 
         return redirect()->intended($this->homeFor($user));
     }

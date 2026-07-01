@@ -43,10 +43,12 @@ const form = ref({
 
 const errors = ref({});
 const coverImagePreview = ref(props.program?.cover_image_url || null);
+const coverImageFile = ref(null);
 
 const handleCoverUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    coverImageFile.value = file;
     const reader = new FileReader();
     reader.onload = (ev) => { coverImagePreview.value = ev.target?.result; };
     reader.readAsDataURL(file);
@@ -57,14 +59,18 @@ const submit = () => {
     errors.value = {};
 
     const url = isEdit.value ? `/admin/programs/${props.program.id}` : '/admin/programs';
-    const method = isEdit.value ? 'put' : 'post';
 
     const payload = {
         ...form.value,
         capacity: form.value.capacity ? Number(form.value.capacity) : '',
+        cover_image: coverImageFile.value || undefined,
     };
 
-    router[method](url, payload, {
+    if (isEdit.value) {
+        payload._method = 'put';
+    }
+
+    router.post(url, payload, {
         preserveScroll: true,
         onError: (errs) => {
             errors.value = errs;
