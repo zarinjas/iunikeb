@@ -32,7 +32,6 @@ const selectedProduct = ref(props.product ?? null);
 const fields = ref({
     amount_requested: '',
     tenure_months: '',
-    purpose: '',
     monthly_income: '',
     monthly_commitment: '',
     employment_notes: '',
@@ -213,7 +212,7 @@ const pickProduct = (product) => {
 const resetToSelect = () => {
     step.value = 'select';
     selectedProduct.value = null;
-    fields.value = { amount_requested: '', tenure_months: '', purpose: '', monthly_income: '', monthly_commitment: '', employment_notes: '' };
+    fields.value = { amount_requested: '', tenure_months: '', monthly_income: '', monthly_commitment: '', employment_notes: '' };
     fieldAnswers.value = {};
     fieldFiles.value = {};
     guarantors.value = [];
@@ -257,7 +256,6 @@ const submit = () => {
     fd.append('financing_category_id', selectedProduct.value.category_id ?? '');
     fd.append('amount_requested', fields.value.amount_requested);
     fd.append('tenure_months', fields.value.tenure_months);
-    fd.append('purpose', fields.value.purpose);
     if (fields.value.monthly_income) fd.append('monthly_income', fields.value.monthly_income);
     if (fields.value.monthly_commitment) fd.append('monthly_commitment', fields.value.monthly_commitment);
     if (fields.value.employment_notes) fd.append('employment_notes', fields.value.employment_notes);
@@ -490,19 +488,6 @@ const submit = () => {
                             class="mt-6"
                         />
                     </template>
-
-                    <!-- Tujuan Pembiayaan (sentiasa dipapar) -->
-                    <FormSection title="Tujuan Pembiayaan" description="Nyatakan tujuan pembiayaan anda dengan jelas." :columns="1">
-                        <div class="col-span-full space-y-1.5">
-                            <label for="cf-purpose" class="block text-sm font-medium text-slate-800">
-                                Tujuan Pembiayaan<span class="text-red-500"> *</span>
-                            </label>
-                            <textarea id="cf-purpose" v-model="fields.purpose" rows="4"
-                                placeholder="Nyatakan tujuan pembiayaan ini..."
-                                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none" />
-                            <p v-if="formErrors.purpose" class="text-sm text-red-600">{{ formErrors.purpose }}</p>
-                        </div>
-                    </FormSection>
 
                     <!-- Maklumat Permohonan (system core fields, hidden if dynamic amount/tenure in sections) -->
                     <FormSection v-if="!hasBothFinancingFields" :title="coreFieldSection.title" :description="coreFieldSection.description" :columns="2">
