@@ -162,6 +162,8 @@ const parsedAnswers = computed(() => {
 const contentFieldTypes = new Set(['rich_text', 'note', 'instruction_text', 'image', 'pdf_document']);
 const contentFields = computed(() => (props.application.product?.fields || []).filter((f) => contentFieldTypes.has(f.type)));
 const hasContentFields = computed(() => contentFields.value.length > 0);
+
+const isDataUrl = (val) => typeof val === 'string' && val.startsWith('data:image/');
 </script>
 
 <template>
@@ -285,9 +287,12 @@ const hasContentFields = computed(() => contentFields.value.length > 0);
                     <div v-if="hasFormAnswers" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                         <h3 class="mb-4 text-base font-semibold text-slate-950">Jawapan Borang</h3>
                         <dl class="grid gap-3 text-sm sm:grid-cols-2">
-                            <div v-for="(value, key) in parsedAnswers" :key="key" :class="typeof value === 'string' && value.length > 50 ? 'sm:col-span-2' : ''">
+                            <div v-for="(value, key) in parsedAnswers" :key="key" :class="typeof value === 'string' && value.length > 50 && !isDataUrl(value) ? 'sm:col-span-2' : ''">
                                 <dt class="font-medium text-slate-500">{{ key }}</dt>
-                                <dd class="mt-0.5 text-slate-950">{{ value ?? '-' }}</dd>
+                                <dd v-if="isDataUrl(value)" class="mt-2 flex justify-center">
+                                    <img :src="String(value)" alt="Tandatangan" class="max-h-24 max-w-full rounded-lg border border-slate-300 bg-white p-2 object-contain" />
+                                </dd>
+                                <dd v-else class="mt-0.5 break-words text-slate-950">{{ value ?? '-' }}</dd>
                             </div>
                         </dl>
                     </div>

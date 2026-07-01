@@ -158,7 +158,7 @@ const logout = () => {
         <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
     </Head>
 
-    <div class="relative min-h-screen bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
+    <div class="relative min-h-screen overflow-x-hidden bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
         <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-y-auto border-r border-teal-100 bg-white lg:block">
             <div class="flex h-16 items-center gap-3 border-b border-teal-100 bg-gradient-to-r from-teal-50 via-cyan-50/60 to-blue-50 px-6">
                 <span v-if="logoPath" class="flex h-9 w-9 items-center justify-center rounded-lg">

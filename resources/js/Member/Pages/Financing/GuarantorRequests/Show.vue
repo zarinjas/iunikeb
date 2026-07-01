@@ -40,7 +40,9 @@ const answers = computed(() => parseAnswers());
 const formatAnswer = (key, value) => {
     if (value == null || value === '') return '-';
     if (Array.isArray(value)) return value.join(', ');
-    return String(value);
+    const str = String(value);
+    if (str.startsWith('data:image/')) return null;
+    return str;
 };
 
 const isPending = computed(() => {
@@ -140,7 +142,10 @@ const respond = (action) => {
             <FormSection v-if="answers && Object.keys(answers).length > 0" title="Jawapan Borang Pemohon" description="Maklumat yang telah diisi oleh pemohon dalam borang permohonan.">
                 <div v-for="(value, key) in answers" :key="key" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                     <p class="text-sm font-semibold text-slate-950">{{ key }}</p>
-                    <p class="mt-1 text-sm leading-6 text-slate-700">{{ formatAnswer(key, value) }}</p>
+                    <div v-if="String(value).startsWith('data:image/')" class="mt-2 flex justify-center">
+                        <img :src="String(value)" alt="Tandatangan" class="max-h-24 max-w-full rounded-lg border border-slate-300 bg-white p-2 object-contain" />
+                    </div>
+                    <p v-else class="mt-1 text-sm leading-6 text-slate-700">{{ formatAnswer(key, value) }}</p>
                 </div>
             </FormSection>
 

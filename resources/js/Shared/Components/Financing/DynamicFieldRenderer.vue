@@ -170,25 +170,27 @@ function fmtPlaceholder(val) {
 
     <!-- Document Checklist -->
     <div v-else-if="field.type === 'document_checklist'" class="rounded-lg border border-slate-200 p-4">
-      <table class="w-full border-collapse text-xs">
-        <thead>
-          <tr class="border border-slate-300 bg-slate-50">
-            <th class="border border-slate-300 px-2 py-1 text-left font-semibold w-8">BIL</th>
-            <th class="border border-slate-300 px-2 py-1 text-left font-semibold">PERKARA</th>
-            <th class="border border-slate-300 px-2 py-1 text-center font-semibold w-24">SILA TANDAKAN (√)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="!(settings.checklist_items?.length)">
-            <td colspan="3" class="border border-slate-200 px-2 py-2 text-center text-slate-400">Belum ada item.</td>
-          </tr>
-          <tr v-for="(item, idx) in (settings.checklist_items ?? [])" :key="idx" class="border border-slate-200">
-            <td class="border border-slate-200 px-2 py-1 text-center">{{ idx + 1 }}.</td>
-            <td class="border border-slate-200 px-2 py-1">{{ item }}</td>
-            <td class="border border-slate-200 px-2 py-1"></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-xs">
+          <thead>
+            <tr class="border border-slate-300 bg-slate-50">
+              <th class="border border-slate-300 px-2 py-1 text-left font-semibold w-8">BIL</th>
+              <th class="border border-slate-300 px-2 py-1 text-left font-semibold">PERKARA</th>
+              <th class="border border-slate-300 px-2 py-1 text-center font-semibold w-24">SILA TANDAKAN (√)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!(settings.checklist_items?.length)">
+              <td colspan="3" class="border border-slate-200 px-2 py-2 text-center text-slate-400">Belum ada item.</td>
+            </tr>
+            <tr v-for="(item, idx) in (settings.checklist_items ?? [])" :key="idx" class="border border-slate-200">
+              <td class="border border-slate-200 px-2 py-1 text-center">{{ idx + 1 }}.</td>
+              <td class="border border-slate-200 px-2 py-1">{{ item }}</td>
+              <td class="border border-slate-200 px-2 py-1"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div v-if="settings.checklist_notes?.length" class="mt-3 space-y-0.5 text-xs text-slate-600">
         <p class="font-medium">Nota :</p>
         <p v-for="(note, idx) in settings.checklist_notes" :key="idx">{{ idx + 1 }}. {{ note }}</p>
@@ -233,7 +235,10 @@ function fmtPlaceholder(val) {
         </p>
       </template>
       <template v-else>
-        <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-xs text-slate-400">
+        <div v-if="value && String(value).startsWith('data:image/')" class="flex justify-center py-2">
+          <img :src="String(value)" alt="Tandatangan Digital" class="max-h-20 max-w-full rounded-lg border border-slate-300 bg-white p-2 object-contain" />
+        </div>
+        <div v-else class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-xs text-slate-400">
           <FileText class="mx-auto mb-1 h-4 w-4" />
           Tandatangan Digital
         </div>
@@ -251,7 +256,10 @@ function fmtPlaceholder(val) {
         />
       </template>
       <template v-else>
-        <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-xs text-slate-400">
+        <div v-if="value && String(value).startsWith('data:image/')" class="flex justify-center py-2">
+          <img :src="String(value)" alt="Tandatangan" class="max-h-20 max-w-full rounded-lg border border-slate-300 bg-white p-2 object-contain" />
+        </div>
+        <div v-else class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-xs text-slate-400">
           <FileText class="mx-auto mb-1 h-4 w-4" />
           Tandatangan
         </div>
@@ -293,7 +301,7 @@ function fmtPlaceholder(val) {
           <input :value="addressValue?.line2 || ''" type="text" placeholder="Kawasan / Pekan (pilihan)"
             class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             @input="onAddressChange('line2', $event.target.value)" />
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input :value="addressValue?.postcode || ''" type="text" placeholder="Poskod" maxlength="5"
               class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
               @input="onAddressChange('postcode', $event.target.value)" />

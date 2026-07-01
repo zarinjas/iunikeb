@@ -638,7 +638,7 @@ const submit = () => {
                     </div>
 
                     <!-- Navigation -->
-                    <div class="flex items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                         <Button type="button" variant="outline" @click="resetToSelect">
                             <ArrowLeft class="mr-2 h-4 w-4" /> Tukar Produk
                         </Button>
