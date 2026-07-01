@@ -39,20 +39,27 @@ class MembershipApplicationWorkflowTest extends TestCase
         $this->admin->assignRole(AccessControl::ROLE_ADMIN);
     }
 
-    public function test_public_visitor_can_submit_membership_application(): void
+    private function validApplicationPayload(array $overrides = []): array
     {
-        $this->post('/membership/apply', [
+        return array_merge([
             'full_name' => 'Siti Aminah Binti Salleh',
-            'identity_no' => '900101105432',
+            'identity_no' => '900101-10-5432',
             'email' => 'aminah@example.test',
             'phone' => '0123456789',
             'address_line_1' => "No. 1, Jalan Demo\n43000 Kajang\nSelangor",
             'date_of_birth' => '1990-01-01',
             'gender' => 'female',
+            'digital_signature' => 'data:image/png;base64,iVBORw0KGgo=',
             'occupation' => 'Eksekutif Operasi',
             'employer_name' => 'Demo Holdings',
             'notes' => 'Ingin menyertai keahlian untuk kemudahan simpanan.',
-        ])->assertRedirect();
+        ], $overrides);
+    }
+
+    public function test_public_visitor_can_submit_membership_application(): void
+    {
+        $this->post('/membership/apply', $this->validApplicationPayload())
+            ->assertRedirect();
 
         $application = MembershipApplication::query()->first();
 
@@ -62,20 +69,12 @@ class MembershipApplicationWorkflowTest extends TestCase
         $this->assertSame('Siti Aminah Binti Salleh', $application->full_name);
     }
 
-    public function test_public_submission_fails_closed_when_no_active_cooperative_exists(): void
+    public function test_public_submission_fails_when_no_active_cooperative_exists(): void
     {
         $this->cooperative->update(['status' => 'inactive']);
 
-            $this->from('/membership/apply')
-            ->post('/membership/apply', [
-                'full_name' => 'Siti Aminah Binti Salleh',
-                'identity_no' => '900101105432',
-                'email' => 'aminah@example.test',
-                'phone' => '0123456789',
-                'address_line_1' => "No. 1, Jalan Demo\n43000 Kajang\nSelangor",
-                'date_of_birth' => '1990-01-01',
-                'gender' => 'female',
-            ])
+        $this->from('/membership/apply')
+            ->post('/membership/apply', $this->validApplicationPayload())
             ->assertRedirect('/membership/apply')
             ->assertSessionHasErrors('cooperative');
 
@@ -84,7 +83,7 @@ class MembershipApplicationWorkflowTest extends TestCase
 
     public function test_public_submission_validation_rejects_incomplete_payload(): void
     {
-            $this->from('/membership/apply')
+        $this->from('/membership/apply')
             ->post('/membership/apply', [
                 'full_name' => '',
                 'identity_no' => '',
@@ -99,7 +98,73 @@ class MembershipApplicationWorkflowTest extends TestCase
                 'address_line_1',
                 'date_of_birth',
                 'gender',
+                'digital_signature',
             ]);
+    }
+
+    public function test_public_submission_rejects_invalid_ic_format(): void
+    {
+        $this->from('/membership/apply')
+            ->post('/membership/apply', $this->validApplicationPayload([
+                'identity_no' => '12345',
+            ]))
+            ->assertRedirect('/membership/apply')
+            ->assertSessionHasErrors('identity_no');
+    }
+
+    public function test_public_submission_rejects_existing_member_ic(): void
+    {
+        Member::factory()->create([
+            'cooperative_id' => $this->cooperative->id,
+            'identity_no' => '900101-10-5432',
+        ]);
+
+        $this->from('/membership/apply')
+            ->post('/membership/apply', $this->validApplicationPayload())
+            ->assertRedirect('/membership/apply')
+            ->assertSessionHasErrors('identity_no');
+    }
+
+    public function test_public_submission_rejects_duplicate_active_application(): void
+    {
+        MembershipApplication::factory()->create([
+            'cooperative_id' => $this->cooperative->id,
+            'identity_no' => '900101-10-5432',
+            'status' => MembershipApplicationStatus::Pending->value,
+        ]);
+
+        $this->from('/membership/apply')
+            ->post('/membership/apply', $this->validApplicationPayload())
+            ->assertRedirect('/membership/apply')
+            ->assertSessionHasErrors('identity_no');
+    }
+
+    public function test_public_submission_allows_reapplication_after_rejection(): void
+    {
+        MembershipApplication::factory()->create([
+            'cooperative_id' => $this->cooperative->id,
+            'identity_no' => '900101-10-5432',
+            'status' => MembershipApplicationStatus::Rejected->value,
+        ]);
+
+        $this->post('/membership/apply', $this->validApplicationPayload())
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('membership_applications', 2);
+    }
+
+    public function test_public_submission_allows_reapplication_after_cancellation(): void
+    {
+        MembershipApplication::factory()->create([
+            'cooperative_id' => $this->cooperative->id,
+            'identity_no' => '900101-10-5432',
+            'status' => MembershipApplicationStatus::Cancelled->value,
+        ]);
+
+        $this->post('/membership/apply', $this->validApplicationPayload())
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('membership_applications', 2);
     }
 
     public function test_admin_routes_are_protected_when_user_lacks_membership_application_permissions(): void
@@ -220,15 +285,9 @@ class MembershipApplicationWorkflowTest extends TestCase
         ]);
         $deleted->delete();
 
-        $this->post('/membership/apply', [
-            'full_name' => 'Siti Aminah Binti Salleh',
-            'identity_no' => '900101105432',
-            'email' => 'aminah@example.test',
-            'phone' => '0123456789',
-            'address_line_1' => "No. 1, Jalan Demo\n43000 Kajang\nSelangor",
-            'date_of_birth' => '1990-01-01',
-            'gender' => 'female',
-        ])->assertRedirect();
+        $this->post('/membership/apply', $this->validApplicationPayload([
+            'identity_no' => '900101-10-5400',
+        ]))->assertRedirect();
 
         $application = MembershipApplication::query()->latest('id')->firstOrFail();
 
@@ -238,15 +297,9 @@ class MembershipApplicationWorkflowTest extends TestCase
 
     public function test_public_submission_is_audit_logged(): void
     {
-        $this->post('/membership/apply', [
-            'full_name' => 'Farah Binti Ismail',
-            'identity_no' => '900101105430',
-            'email' => 'farah@example.test',
-            'phone' => '0131112233',
-            'address_line_1' => "No. 9, Jalan Indah\n43000 Kajang\nSelangor",
-            'date_of_birth' => '1990-01-01',
-            'gender' => 'female',
-        ])->assertRedirect();
+        $this->post('/membership/apply', $this->validApplicationPayload([
+            'identity_no' => '900101-10-5430',
+        ]))->assertRedirect();
 
         $application = MembershipApplication::query()->firstOrFail();
 
@@ -255,5 +308,30 @@ class MembershipApplicationWorkflowTest extends TestCase
             'subject_id' => $application->id,
             'subject_type' => MembershipApplication::class,
         ]);
+    }
+
+    public function test_phone_validation_rejects_invalid_format(): void
+    {
+        $this->from('/membership/apply')
+            ->post('/membership/apply', $this->validApplicationPayload([
+                'phone' => '12345',
+            ]))
+            ->assertRedirect('/membership/apply')
+            ->assertSessionHasErrors('phone');
+    }
+
+    public function test_identity_no_normalized_check_blocks_both_formats(): void
+    {
+        Member::factory()->create([
+            'cooperative_id' => $this->cooperative->id,
+            'identity_no' => '900101105432',
+        ]);
+
+        $this->from('/membership/apply')
+            ->post('/membership/apply', $this->validApplicationPayload([
+                'identity_no' => '900101-10-5432',
+            ]))
+            ->assertRedirect('/membership/apply')
+            ->assertSessionHasErrors('identity_no');
     }
 }

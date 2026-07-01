@@ -11,6 +11,7 @@ use App\Models\FinancingApplication;
 use App\Models\FormSubmission;
 use App\Models\FrontpageSection;
 use App\Models\MembershipApplication;
+use App\Models\Menu;
 use App\Models\Program;
 use App\Services\Files\MemberPhotoStorageService;
 use App\Services\Settings\SettingsService;
@@ -68,6 +69,56 @@ class HandleInertiaRequests extends Middleware
                 'status' => fn () => $request->session()->get('status'),
             ],
             'appSettings' => fn () => app(SettingsService::class)->shared(),
+            'publicMenus' => function () use ($request): array {
+                $isPublicRoute = !str_starts_with($request->path(), 'admin')
+                    && !str_starts_with($request->path(), 'member');
+
+                if (!$isPublicRoute) {
+                    return ['header' => [], 'footer' => []];
+                }
+
+                $cooperative = app(SettingsService::class)->activeCooperative();
+                $cooperativeId = $cooperative?->id;
+
+                if (!$cooperativeId) {
+                    return ['header' => [], 'footer' => []];
+                }
+
+                $headerMenus = Menu::query()
+                    ->where('cooperative_id', $cooperativeId)
+                    ->location('header')
+                    ->active()
+                    ->root()
+                    ->with('children')
+                    ->orderBy('sort_order')
+                    ->get()
+                    ->map(fn (Menu $menu) => [
+                        'label' => $menu->label,
+                        'url' => $menu->url,
+                        'children' => $menu->children->map(fn ($child) => [
+                            'label' => $child->label,
+                            'url' => $child->url,
+                        ])->values(),
+                    ]);
+
+                $footerMenus = Menu::query()
+                    ->where('cooperative_id', $cooperativeId)
+                    ->where('location', 'like', 'footer%')
+                    ->active()
+                    ->orderBy('location')
+                    ->orderBy('sort_order')
+                    ->get()
+                    ->groupBy('location')
+                    ->map(fn ($items) => $items->map(fn ($item) => [
+                        'label' => $item->label,
+                        'url' => $item->url,
+                    ])->values());
+
+                return [
+                    'header' => $headerMenus,
+                    'footer' => $footerMenus,
+                ];
+            },
             'popup' => function () use ($request): ?array {
                 $user = $request->user();
                 if (! $user || $user->role !== 'member') return null;

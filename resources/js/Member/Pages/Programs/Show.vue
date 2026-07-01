@@ -33,8 +33,10 @@ const typeLabel = (type) => ({
 
     <MemberLayout>
         <section class="mx-auto max-w-4xl space-y-6">
-            <div v-if="program.cover_image_url" class="h-48 overflow-hidden rounded-2xl sm:h-64">
-                <img :src="program.cover_image_url" :alt="program.title" class="h-full w-full object-cover" />
+            <div v-if="program.cover_image_url" class="overflow-hidden rounded-2xl">
+                <div class="relative aspect-[4/3]">
+                    <img :src="program.cover_image_url" :alt="program.title" class="absolute inset-0 h-full w-full object-cover" />
+                </div>
             </div>
 
             <div>

@@ -20,7 +20,7 @@ class MembershipApplicationFactory extends Factory
             'cooperative_id' => Cooperative::factory(),
             'application_no' => 'APP-'.fake()->unique()->numerify('########'),
             'full_name' => fake()->name(),
-            'identity_no' => fake()->numerify('###########'),
+            'identity_no' => fake()->numerify('######-##-####'),
             'email' => fake()->safeEmail(),
             'phone' => fake()->numerify('01########'),
             'date_of_birth' => fake()->dateTimeBetween('-60 years', '-18 years')->format('Y-m-d'),

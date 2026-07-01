@@ -29,7 +29,9 @@ Route::get('/manifest.json', ManifestController::class)->name('manifest');
 Route::get('/', [FrontpageController::class, 'index'])->name('public.home');
 
 Route::get('/membership/apply', [MembershipApplicationController::class, 'create'])->name('public.membership.apply');
-Route::post('/membership/apply', [MembershipApplicationController::class, 'store'])->name('public.membership.store');
+Route::post('/membership/apply', [MembershipApplicationController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('public.membership.store');
 Route::get('/membership/apply/thank-you/{applicationNo}', [MembershipApplicationController::class, 'thankYou'])->name('public.membership.thank-you');
 
 Route::get('/forms', [FormDirectoryController::class, 'index'])->name('public.forms.index');

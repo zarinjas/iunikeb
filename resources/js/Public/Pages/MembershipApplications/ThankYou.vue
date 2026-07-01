@@ -1,6 +1,6 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
-import { CheckCircle2, Home } from 'lucide-vue-next';
+import { Head, Link } from '@inertiajs/vue3';
+import { CheckCircle2, Home, RotateCcw } from 'lucide-vue-next';
 import PublicLayout from '@/Public/Layouts/PublicLayout.vue';
 
 defineProps({
@@ -51,13 +51,22 @@ defineProps({
                     </p>
                 </div>
 
-                <a
-                    href="/"
-                    class="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
-                >
-                    <Home class="h-4 w-4" />
-                    Kembali ke Laman Utama
-                </a>
+                <div class="flex flex-col items-center gap-3 min-[400px]:flex-row">
+                    <a
+                        href="/"
+                        class="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
+                    >
+                        <Home class="h-4 w-4" />
+                        Kembali ke Laman Utama
+                    </a>
+                    <Link
+                        href="/membership/apply"
+                        class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100"
+                    >
+                        <RotateCcw class="h-4 w-4" />
+                        Mohon Lagi
+                    </Link>
+                </div>
             </div>
         </section>
     </PublicLayout>

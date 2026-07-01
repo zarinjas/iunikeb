@@ -166,6 +166,18 @@ const hasBothFinancingFields = computed(() =>
   hasFinancingAmountInSections.value && hasFinancingTenureInSections.value
 );
 
+const resolveRate = (tenure) => {
+    const tiers = selectedProduct.value?.rate_tiers_json || [];
+    if (tiers.length > 0) {
+        for (const tier of tiers) {
+            if (tenure >= (tier.min_months || 0) && tenure <= (tier.max_months || 0)) {
+                return Number(tier.rate_percent) || 0;
+            }
+        }
+    }
+    return Number(selectedProduct.value?.annual_rate_percent) || 0;
+};
+
 const parseSettings = (field) => {
     try { return typeof field.settings_json === 'string' ? JSON.parse(field.settings_json) : (field.settings_json ?? {}); }
     catch { return {}; }
@@ -181,6 +193,8 @@ const pickProduct = (product) => {
         min_tenure_months: product.min_tenure_months,
         max_tenure_months: product.max_tenure_months,
         annual_rate_percent: product.annual_rate_percent,
+        rate_tiers_json: product.rate_tiers_json || [],
+        rate_note: product.rate_note,
         requires_guarantor: product.requires_guarantor,
         guarantor_count: product.guarantor_count,
         requires_stamped_upload: product.requires_stamped_upload,
@@ -474,7 +488,7 @@ const submit = () => {
                     <FinancingEstimatorCard
                         :amount="fields.amount_requested"
                         :tenure-months="fields.tenure_months"
-                        :annual-rate-percent="selectedProduct?.annual_rate_percent || 0"
+                        :annual-rate-percent="resolveRate(Number(fields.tenure_months) || 0)"
                     />
 
                     <!-- Supporting Document Uploads -->
@@ -506,9 +520,22 @@ const submit = () => {
                         </div>
                     </FormSection>
 
-                    <!-- Maklumat Permohonan (system core fields) -->
+                    <!-- Tujuan Pembiayaan (sentiasa dipapar) -->
+                    <FormSection title="Tujuan Pembiayaan" description="Nyatakan tujuan pembiayaan anda dengan jelas." :columns="1">
+                        <div class="col-span-full space-y-1.5">
+                            <label for="cf-purpose" class="block text-sm font-medium text-slate-800">
+                                Tujuan Pembiayaan<span class="text-red-500"> *</span>
+                            </label>
+                            <textarea id="cf-purpose" v-model="fields.purpose" rows="4"
+                                placeholder="Nyatakan tujuan pembiayaan ini..."
+                                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none" />
+                            <p v-if="formErrors.purpose" class="text-sm text-red-600">{{ formErrors.purpose }}</p>
+                        </div>
+                    </FormSection>
+
+                    <!-- Maklumat Permohonan (system core fields, hidden if dynamic amount/tenure in sections) -->
                     <FormSection v-if="!hasBothFinancingFields" :title="coreFieldSection.title" :description="coreFieldSection.description" :columns="2">
-                        <template v-for="cf in coreFields" :key="cf.key">
+                        <template v-for="cf in coreFields.filter(f => f.key !== 'purpose')" :key="cf.key">
                             <div v-if="cf.type === 'currency'" :class="cf.key === 'amount_requested' || cf.key === 'tenure_months' ? '' : ''" class="space-y-1.5">
                                 <label :for="'cf-' + cf.key" class="block text-sm font-medium text-slate-800">
                                     {{ cf.label }}<span v-if="cf.required" class="text-red-500"> *</span>
@@ -534,12 +561,12 @@ const submit = () => {
                                 />
                             </div>
 
-                            <div v-else-if="cf.type === 'long_text'" :class="cf.key === 'purpose' ? 'col-span-full' : 'col-span-full'" class="space-y-1.5">
+                            <div v-else-if="cf.type === 'long_text'" class="col-span-full space-y-1.5">
                                 <label :for="'cf-' + cf.key" class="block text-sm font-medium text-slate-800">
                                     {{ cf.label }}<span v-if="cf.required" class="text-red-500"> *</span>
                                 </label>
                                 <textarea :id="'cf-' + cf.key" v-model="fields[cf.key]" rows="3"
-                                    :placeholder="cf.key === 'purpose' ? 'Nyatakan tujuan pembiayaan ini...' : 'cth: Penjawat awam Gred N19, Kementerian Kesihatan...'"
+                                    placeholder="cth: Penjawat awam Gred N19, Kementerian Kesihatan..."
                                     class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20" />
                                 <p v-if="isAutofilled(cf.key)" class="text-xs font-medium text-blue-600">Auto-isi</p>
                                 <p v-if="formErrors[cf.key]" class="text-sm text-red-600">{{ formErrors[cf.key] }}</p>
