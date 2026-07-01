@@ -77,7 +77,7 @@ const customSections = computed(() => {
         <section class="space-y-6">
             <PageHeader :title="'Permohonan ' + application.reference_no" :description="application.product_name || 'Pembiayaan'">
                 <template #actions>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
                         <StatusBadge :status="application.status" :label="application.status_label" />
                         <Button v-if="isPendingStamp" :as="Link" :href="application.print_url" size="sm">
                             <Printer class="mr-2 h-4 w-4" />

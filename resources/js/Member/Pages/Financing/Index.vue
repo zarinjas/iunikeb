@@ -72,7 +72,7 @@ const fmt = (val) => val != null ? 'RM ' + Number(val).toLocaleString('en-MY', {
                         :href="`/member/financing/applications/${app.id}`"
                         class="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-200 hover:bg-white hover:shadow-md"
                     >
-                        <div class="flex items-start justify-between gap-2">
+                        <div class="flex flex-wrap items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-semibold text-slate-950">{{ app.reference_no }}</p>
                                 <p class="mt-0.5 truncate text-xs text-slate-500">{{ app.product_name || '-' }}</p>
