@@ -43,27 +43,29 @@ class FinancingDemoSeeder extends Seeder
         $this->generateRateImage('financing/rate-images/berpenjamin.jpg', [15, 118, 110], 'Berpenjamin');
         $this->generateRateImage('financing/rate-images/tanpa-penjamin.jpg', [29, 78, 216], 'Tanpa Penjamin');
 
-        $berpenjamin = FinancingCategory::create([
-            'cooperative_id' => $cooperative->id,
-            'name' => 'Pembiayaan Berpenjamin',
-            'slug' => 'pembiayaan-berpenjamin',
-            'description' => 'Pembiayaan yang memerlukan penjamin daripada kalangan ahli koperasi.',
-            'type' => FinancingCategoryType::Guaranteed,
-            'icon' => 'HandCoins',
-            'is_active' => true,
-            'created_by' => $admin->id,
-        ]);
+        $berpenjamin = FinancingCategory::updateOrCreate(
+            ['cooperative_id' => $cooperative->id, 'slug' => 'pembiayaan-berpenjamin'],
+            [
+                'name' => 'Pembiayaan Berpenjamin',
+                'description' => 'Pembiayaan yang memerlukan penjamin daripada kalangan ahli koperasi.',
+                'type' => FinancingCategoryType::Guaranteed,
+                'icon' => 'HandCoins',
+                'is_active' => true,
+                'created_by' => $admin->id,
+            ],
+        );
 
-        $tanpaPenjamin = FinancingCategory::create([
-            'cooperative_id' => $cooperative->id,
-            'name' => 'Pembiayaan Tanpa Penjamin',
-            'slug' => 'pembiayaan-tanpa-penjamin',
-            'description' => 'Pembiayaan tanpa penjamin dengan syarat kelayakan tertentu.',
-            'type' => FinancingCategoryType::NonGuaranteed,
-            'icon' => 'HandCoins',
-            'is_active' => true,
-            'created_by' => $admin->id,
-        ]);
+        $tanpaPenjamin = FinancingCategory::updateOrCreate(
+            ['cooperative_id' => $cooperative->id, 'slug' => 'pembiayaan-tanpa-penjamin'],
+            [
+                'name' => 'Pembiayaan Tanpa Penjamin',
+                'description' => 'Pembiayaan tanpa penjamin dengan syarat kelayakan tertentu.',
+                'type' => FinancingCategoryType::NonGuaranteed,
+                'icon' => 'HandCoins',
+                'is_active' => true,
+                'created_by' => $admin->id,
+            ],
+        );
 
         $productDefs = [
             // ── Produk Sedia Ada ──
@@ -498,40 +500,50 @@ class FinancingDemoSeeder extends Seeder
             $rateImage = $data['rate_image_path'] ?? null;
             unset($data['category'], $data['sections'], $data['rate_image_path']);
 
-            $product = FinancingProduct::create([
-                ...$data,
-                'cooperative_id' => $cooperative->id,
-                'financing_category_id' => $category->id,
-                'rate_image_path' => $rateImage,
-                'is_active' => true,
-                'created_by' => $admin->id,
-            ]);
+            $product = FinancingProduct::updateOrCreate(
+                ['cooperative_id' => $cooperative->id, 'slug' => $data['slug']],
+                [
+                    ...$data,
+                    'cooperative_id' => $cooperative->id,
+                    'financing_category_id' => $category->id,
+                    'rate_image_path' => $rateImage,
+                    'is_active' => true,
+                    'created_by' => $admin->id,
+                ],
+            );
 
             if (! empty($sections)) {
                 foreach ($sections as $order => $sectionData) {
                     $fields = $sectionData['fields'] ?? [];
                     unset($sectionData['fields']);
 
-                    $section = FinancingProductSection::create([
-                        ...$sectionData,
-                        'financing_product_id' => $product->id,
-                        'sort_order' => $order + 1,
-                        'is_active' => true,
-                    ]);
+                    $section = FinancingProductSection::updateOrCreate(
+                        ['financing_product_id' => $product->id, 'title' => $sectionData['title']],
+                        [
+                            ...$sectionData,
+                            'financing_product_id' => $product->id,
+                            'sort_order' => $order + 1,
+                            'is_active' => true,
+                        ],
+                    );
 
                     foreach ($fields as $fOrder => $field) {
                         $field['field_key'] = $this->fieldKey($field['label'], $field['type']);
-                        FinancingProductField::create([
-                            ...$field,
-                            'financing_product_id' => $product->id,
-                            'financing_product_section_id' => $section->id,
-                            'sort_order' => $fOrder + 1,
-                            'is_active' => true,
-                            'validation_json' => $field['validation_json'] ?? null,
-                            'options_json' => $field['options_json'] ?? null,
-                            'settings_json' => $field['settings_json'] ?? null,
-                            'help_text' => $field['help_text'] ?? null,
-                        ]);
+                        $field['field_key'] = $this->fieldKey($field['label'], $field['type']);
+                        FinancingProductField::updateOrCreate(
+                            ['financing_product_id' => $product->id, 'field_key' => $field['field_key']],
+                            [
+                                ...$field,
+                                'financing_product_id' => $product->id,
+                                'financing_product_section_id' => $section->id,
+                                'sort_order' => $fOrder + 1,
+                                'is_active' => true,
+                                'validation_json' => $field['validation_json'] ?? null,
+                                'options_json' => $field['options_json'] ?? null,
+                                'settings_json' => $field['settings_json'] ?? null,
+                                'help_text' => $field['help_text'] ?? null,
+                            ],
+                        );
                     }
                 }
             } else {
@@ -684,12 +696,13 @@ class FinancingDemoSeeder extends Seeder
 
     private function seedDefaultSectionsAndFields(FinancingProduct $product): void
     {
-        $section = FinancingProductSection::create([
-            'financing_product_id' => $product->id,
-            'title' => 'Maklumat Permohonan',
-            'description' => 'Sila lengkapkan maklumat berikut untuk permohonan pembiayaan.',
-            'is_active' => true,
-        ]);
+        $section = FinancingProductSection::updateOrCreate(
+            ['financing_product_id' => $product->id, 'title' => 'Maklumat Permohonan'],
+            [
+                'description' => 'Sila lengkapkan maklumat berikut untuk permohonan pembiayaan.',
+                'is_active' => true,
+            ],
+        );
 
         $fields = [
             [
@@ -754,39 +767,43 @@ class FinancingDemoSeeder extends Seeder
         }
 
         foreach ($fields as $i => $field) {
-            FinancingProductField::create([
-                'financing_product_id' => $product->id,
-                'financing_product_section_id' => $section->id,
-                'label' => $field['label'],
-                'field_key' => $this->fieldKey($field['label'], $field['type']),
-                'type' => $field['type'],
-                'is_required' => $field['is_required'] ?? false,
-                'help_text' => $field['help_text'] ?? null,
-                'options_json' => $field['options_json'] ?? null,
-                'validation_json' => $field['validation_json'] ?? null,
-                'settings_json' => $field['settings_json'] ?? null,
-                'is_active' => true,
-            ]);
+            $fieldKey = $this->fieldKey($field['label'], $field['type']);
+            FinancingProductField::updateOrCreate(
+                ['financing_product_id' => $product->id, 'field_key' => $fieldKey],
+                [
+                    'financing_product_section_id' => $section->id,
+                    'label' => $field['label'],
+                    'type' => $field['type'],
+                    'is_required' => $field['is_required'] ?? false,
+                    'help_text' => $field['help_text'] ?? null,
+                    'options_json' => $field['options_json'] ?? null,
+                    'validation_json' => $field['validation_json'] ?? null,
+                    'settings_json' => $field['settings_json'] ?? null,
+                    'is_active' => true,
+                ],
+            );
         }
 
-        $infoSection = FinancingProductSection::create([
-            'financing_product_id' => $product->id,
-            'title' => 'Terma & Syarat',
-            'description' => null,
-            'is_active' => true,
-        ]);
-
-        FinancingProductField::create([
-            'financing_product_id' => $product->id,
-            'financing_product_section_id' => $infoSection->id,
-            'label' => 'Terma Pembiayaan',
-            'field_key' => 'terma_pembiayaan',
-            'type' => FinancingFieldType::RichText,
-            'settings_json' => [
-                'content' => '<p>Dengan menghantar permohonan ini, saya mengesahkan bahawa:</p><ul><li>Semua maklumat yang diberikan adalah benar</li><li>Saya memahami terma dan syarat pembiayaan</li><li>Saya bersetuju dengan kadar keuntungan yang ditetapkan</li><li>Saya akan membuat bayaran balik mengikut jadual yang ditetapkan</li></ul>',
+        $infoSection = FinancingProductSection::updateOrCreate(
+            ['financing_product_id' => $product->id, 'title' => 'Terma & Syarat'],
+            [
+                'description' => null,
+                'is_active' => true,
             ],
-            'is_active' => true,
-        ]);
+        );
+
+        FinancingProductField::updateOrCreate(
+            ['financing_product_id' => $product->id, 'field_key' => 'terma_pembiayaan'],
+            [
+                'financing_product_section_id' => $infoSection->id,
+                'label' => 'Terma Pembiayaan',
+                'type' => FinancingFieldType::RichText,
+                'settings_json' => [
+                    'content' => '<p>Dengan menghantar permohonan ini, saya mengesahkan bahawa:</p><ul><li>Semua maklumat yang diberikan adalah benar</li><li>Saya memahami terma dan syarat pembiayaan</li><li>Saya bersetuju dengan kadar keuntungan yang ditetapkan</li><li>Saya akan membuat bayaran balik mengikut jadual yang ditetapkan</li></ul>',
+                ],
+                'is_active' => true,
+            ],
+        );
     }
 
     private function fieldKey(string $label, FinancingFieldType $type): string

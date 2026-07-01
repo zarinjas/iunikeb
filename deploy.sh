@@ -48,10 +48,8 @@ ssh "$VPS_HOST" << EOF
   echo "--- Migration ---"
   php artisan migrate --force
 
-  echo "--- Seed data asas ---"
-  php artisan db:seed --class=RolePermissionSeeder --force 2>/dev/null || true
-  php artisan db:seed --class=CooperativeSettingsSeeder --force 2>/dev/null || true
-  php artisan demo:seed-users 2>/dev/null || true
+  echo "--- Seed semua data (idempotent) ---"
+  php artisan db:seed --force 2>/dev/null || true
 
   echo "--- Cache ---"
   php artisan optimize:clear
