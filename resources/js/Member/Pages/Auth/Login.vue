@@ -82,13 +82,19 @@ const quickLogin = (url) => {
 
             <Button
                 type="submit"
-                class="w-full bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-800 hover:to-teal-700"
+                class="h-12 w-full rounded-xl text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:brightness-95"
+                :style="{ backgroundColor: primaryColor }"
                 :disabled="form.processing"
             >
                 {{ form.processing ? 'Sedang diproses...' : 'Log Masuk' }}
             </Button>
 
-            <FaceIdButton @click="submit" />
+            <div class="relative py-1">
+                <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-200" /></div>
+                <div class="relative flex justify-center"><span class="bg-white px-3 text-xs text-slate-400">atau gunakan biometrik</span></div>
+            </div>
+
+            <FaceIdButton />
 
             <div class="flex flex-col gap-2 pt-2 text-center">
                 <Link

@@ -21,7 +21,7 @@ class FrontpageController extends Controller
 
     private const SECTION_KEYS = [
         'hero', 'stats', 'services', 'benefit', 'business',
-        'promotion', 'membership', 'footer',
+        'promotion', 'membership', 'footer', 'member_popup',
     ];
 
     public function index(Request $request): Response
@@ -41,6 +41,7 @@ class FrontpageController extends Controller
                 when 'promotion' then 6
                 when 'membership' then 7
                 when 'footer' then 8
+                when 'member_popup' then 9
                 else 99 end")
             ->get();
 
@@ -69,6 +70,7 @@ class FrontpageController extends Controller
                 when 'promotion' then 6
                 when 'membership' then 7
                 when 'footer' then 8
+                when 'member_popup' then 9
                 else 99 end")
             ->get()
             ->map(fn ($s) => [
@@ -240,6 +242,7 @@ class FrontpageController extends Controller
             'promotion' => 'Promosi',
             'membership' => 'Keahlian',
             'footer' => 'Footer',
+            'member_popup' => 'Popup Ahli',
             default => $key,
         };
     }

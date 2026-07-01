@@ -3,10 +3,8 @@ import { usePage } from '@inertiajs/vue3'
 import { useInstallPrompt } from '@/Shared/Composables/useInstallPrompt'
 import { computed } from 'vue'
 
-const { isIOS, isStandalone, installed, loading, install } = useInstallPrompt()
+const { show, isIOS, loading, install, dismiss } = useInstallPrompt()
 const cooperative = computed(() => usePage().props.appSettings?.cooperative ?? {})
-
-const visible = computed(() => !isStandalone.value && !installed.value && !isIOS.value)
 </script>
 
 <template>
@@ -19,7 +17,7 @@ const visible = computed(() => !isStandalone.value && !installed.value && !isIOS
         leave-to-class="translate-y-full opacity-0"
     >
         <div
-            v-if="visible"
+            v-if="show"
             class="fixed bottom-0 left-0 right-0 z-50 border-t border-teal-200/60 bg-white/95 shadow-2xl shadow-teal-900/10 backdrop-blur-xl"
             style="padding-bottom: env(safe-area-inset-bottom, 0px)"
         >
@@ -42,14 +40,25 @@ const visible = computed(() => !isStandalone.value && !installed.value && !isIOS
                     </p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:brightness-105 disabled:opacity-50"
-                        :disabled="loading"
-                        @click="install"
-                    >
-                        {{ loading ? 'Memasang...' : 'Pasang Aplikasi' }}
-                    </button>
+                    <template v-if="isIOS">
+                        <button
+                            type="button"
+                            class="rounded-lg px-3 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                            @click="dismiss"
+                        >
+                            Tutup
+                        </button>
+                    </template>
+                    <template v-else>
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:brightness-105 disabled:opacity-50"
+                            :disabled="loading"
+                            @click="install"
+                        >
+                            {{ loading ? 'Memasang...' : 'Pasang Aplikasi' }}
+                        </button>
+                    </template>
                 </div>
             </div>
         </div>

@@ -21,6 +21,7 @@ class FrontpageController extends Controller
         $sections = FrontpageSection::query()
             ->where('cooperative_id', $cooperativeId)
             ->active()
+            ->where('key', '!=', 'member_popup')
             ->with('items')
             ->get()
             ->keyBy('key')

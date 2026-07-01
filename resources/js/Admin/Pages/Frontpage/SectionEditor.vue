@@ -19,6 +19,7 @@ const sectionLabels = {
     promotion: 'Promosi',
     membership: 'Keahlian',
     footer: 'Footer',
+    member_popup: 'Popup Ahli',
 };
 
 const label = sectionLabels[props.section.key] || props.section.key;
@@ -240,6 +241,7 @@ const businessFields = props.section.key === 'business';
 const promotionFields = props.section.key === 'promotion';
 const membershipFields = props.section.key === 'membership';
 const footerFields = props.section.key === 'footer';
+const popupFields = props.section.key === 'member_popup';
 </script>
 
 <template>
@@ -465,7 +467,7 @@ const footerFields = props.section.key === 'footer';
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <div v-if="heroFields || serviceFields || businessFields || promotionFields">
+                    <div v-if="heroFields || serviceFields || businessFields || promotionFields || popupFields">
                         <label class="mb-1 block text-xs font-medium text-slate-500">Imej</label>
                         <div class="flex items-center gap-3">
                             <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-teal-300 hover:text-teal-600">
@@ -475,6 +477,9 @@ const footerFields = props.section.key === 'footer';
                             </label>
                             <button v-if="previewImage()" type="button" class="text-sm text-red-500 hover:text-red-600" @click="itemForm.image = null; previewUrl = null">Buang</button>
                         </div>
+                        <p v-if="popupFields" class="mt-1.5 text-xs text-slate-400 leading-relaxed">
+                            Saiz terbaik: 800×600px · Maks 2MB · Format: JPG/PNG/WebP
+                        </p>
                         <div v-if="previewImage()" class="relative mt-2 w-fit">
                             <img :src="previewImage()" class="h-32 rounded-lg border object-cover" />
                             <span v-if="uploading" class="absolute bottom-1 right-1 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Muat naik...</span>
@@ -482,17 +487,17 @@ const footerFields = props.section.key === 'footer';
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-xs font-medium text-slate-500">Tajuk</label>
+                        <label class="mb-1 block text-xs font-medium text-slate-500">Tajuk <span v-if="popupFields" class="text-slate-300">(opsional)</span></label>
                         <input v-model="itemForm.title" class="h-9 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
                     </div>
 
-                    <div v-if="heroFields || statsFields || serviceFields || businessFields || promotionFields">
-                        <label class="mb-1 block text-xs font-medium text-slate-500">Subtajuk</label>
+                    <div v-if="heroFields || statsFields || serviceFields || businessFields || promotionFields || popupFields">
+                        <label class="mb-1 block text-xs font-medium text-slate-500">Subtajuk <span v-if="popupFields" class="text-slate-300">(opsional)</span></label>
                         <input v-model="itemForm.subtitle" class="h-9 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
                     </div>
 
-                    <div v-if="heroFields || serviceFields || businessFields || promotionFields">
-                        <label class="mb-1 block text-xs font-medium text-slate-500">Penerangan</label>
+                    <div v-if="heroFields || serviceFields || businessFields || promotionFields || popupFields">
+                        <label class="mb-1 block text-xs font-medium text-slate-500">Kandungan <span v-if="popupFields" class="text-slate-300">(opsional)</span></label>
                         <textarea v-model="itemForm.description" class="min-h-[80px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"></textarea>
                     </div>
 
@@ -517,13 +522,13 @@ const footerFields = props.section.key === 'footer';
                         <input v-model="itemForm.title" class="h-9 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
                     </div>
 
-                    <div v-if="heroFields || servicesFields || businessFields || promotionFields || membershipFields">
-                        <label class="mb-1 block text-xs font-medium text-slate-500">Teks Butang</label>
+                    <div v-if="heroFields || servicesFields || businessFields || promotionFields || membershipFields || popupFields">
+                        <label class="mb-1 block text-xs font-medium text-slate-500">Teks Butang <span v-if="popupFields" class="text-slate-300">(opsional)</span></label>
                         <input v-model="itemForm.button_text" class="h-9 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
                     </div>
 
-                    <div v-if="heroFields || servicesFields || businessFields || promotionFields || membershipFields">
-                        <label class="mb-1 block text-xs font-medium text-slate-500">URL Butang</label>
+                    <div v-if="heroFields || servicesFields || businessFields || promotionFields || membershipFields || popupFields">
+                        <label class="mb-1 block text-xs font-medium text-slate-500">URL Butang <span v-if="popupFields" class="text-slate-300">(opsional)</span></label>
                         <input v-model="itemForm.button_url" class="h-9 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
                     </div>
                 </div>
@@ -550,7 +555,7 @@ const footerFields = props.section.key === 'footer';
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500">
                                 <th class="w-10 px-4 py-3">#</th>
-                                <th v-if="heroFields || serviceFields || businessFields || promotionFields" class="px-4 py-3">Imej</th>
+                                <th v-if="heroFields || serviceFields || businessFields || promotionFields || popupFields" class="px-4 py-3">Imej</th>
                                 <th class="px-4 py-3">Tajuk</th>
                                 <th v-if="statsFields" class="px-4 py-3">Nilai</th>
                                 <th class="px-4 py-3">Status</th>
@@ -565,7 +570,7 @@ const footerFields = props.section.key === 'footer';
                                 :class="editingItem === item.id ? 'bg-teal-50/50' : ''"
                             >
                                 <td class="px-4 py-3 text-slate-400">{{ index + 1 }}</td>
-                                <td v-if="heroFields || serviceFields || businessFields || promotionFields" class="px-4 py-3">
+                                <td v-if="heroFields || serviceFields || businessFields || promotionFields || popupFields" class="px-4 py-3">
                                     <img
                                         v-if="item.image && typeof item.image === 'string'"
                                         :src="item.image.startsWith('http') ? item.image : '/storage/' + item.image"

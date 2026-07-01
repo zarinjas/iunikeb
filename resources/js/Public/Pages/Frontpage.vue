@@ -7,10 +7,9 @@ import {
     ShieldCheck, ShoppingBag, Smartphone, Star, Store, TrendingUp,
     UserRound, Users, Wallet, X, Zap
 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import AppLogo from '@/Shared/Components/AppLogo.vue';
 import FlashToast from '@/Shared/Components/FlashToast.vue';
-import { Button } from '@/Shared/Components/ui/button';
 
 const page = usePage();
 const props = defineProps({
@@ -22,20 +21,40 @@ const cooperative = computed(() => page.props.appSettings?.cooperative ?? {});
 const faviconUrl = computed(() => cooperative.value.favicon_url);
 const contact = computed(() => page.props.appSettings?.contact ?? {});
 const mobileMenuOpen = ref(false);
+const activeMobileMenu = ref(null);
 const activeDropdown = ref(null);
 const navRef = ref(null);
 const scrolled = ref(false);
 
 function toggleDropdown(label) { activeDropdown.value = activeDropdown.value === label ? null : label; }
+function toggleMobileMenu(label) { activeMobileMenu.value = activeMobileMenu.value === label ? null : label; }
 function closeAllDropdowns() { activeDropdown.value = null; }
+function closeMobileMenu() {
+    mobileMenuOpen.value = false;
+    activeMobileMenu.value = null;
+}
+
+function handleScroll() { scrolled.value = window.scrollY > 50; }
+function handleKeydown(event) {
+    if (event.key === 'Escape') closeMobileMenu();
+}
 
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
-    window.addEventListener('scroll', () => { scrolled.value = window.scrollY > 50; });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('keydown', handleKeydown);
+    handleScroll();
 });
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+    window.removeEventListener('scroll', handleScroll);
+    document.removeEventListener('keydown', handleKeydown);
+    document.body.style.overflow = '';
+});
+
+watch(mobileMenuOpen, (isOpen) => {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
 });
 
 function handleClickOutside(event) {
@@ -193,29 +212,66 @@ const address = computed(() => [
                     </Link>
                 </div>
 
-                <button type="button" class="lg:hidden" :class="scrolled ? 'text-slate-700' : 'text-white'" @click="mobileMenuOpen = true">
+                <button
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center rounded-full border transition lg:hidden"
+                    :class="scrolled ? 'border-slate-200 bg-white text-slate-700 shadow-sm' : 'border-white/25 bg-slate-950/10 text-white backdrop-blur-sm'"
+                    aria-label="Buka menu navigasi"
+                    aria-controls="mobile-navigation"
+                    :aria-expanded="mobileMenuOpen"
+                    @click="mobileMenuOpen = true"
+                >
                     <Menu class="h-6 w-6" />
                 </button>
             </div>
         </header>
 
         <!-- Mobile Menu -->
-        <div v-if="mobileMenuOpen" class="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm lg:hidden" @click="mobileMenuOpen = false">
-            <aside class="ml-auto flex h-full w-80 flex-col bg-white shadow-2xl" @click.stop>
-                <div class="flex h-16 items-center justify-between border-b px-5">
-                    <AppLogo :name="cooperative.name" :logo-url="cooperative.logo_url" href="/" size="sm" />
-                    <button @click="mobileMenuOpen = false"><X class="h-5 w-5" /></button>
+        <div v-if="mobileMenuOpen" class="fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm lg:hidden" @click="closeMobileMenu">
+            <aside id="mobile-navigation" class="ml-auto flex h-full w-[min(90vw,24rem)] flex-col overflow-hidden bg-slate-50 shadow-2xl" aria-label="Navigasi mobile" @click.stop>
+                <div class="relative overflow-hidden bg-gradient-to-br from-[#082c3b] to-[#0F766E] px-5 pb-5 pt-4 text-white">
+                    <div class="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/10" />
+                    <div class="relative flex items-center justify-between">
+                        <AppLogo :name="cooperative.name" :logo-url="cooperative.logo_url" href="/" size="sm" :dark="false" />
+                        <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20" aria-label="Tutup menu" @click="closeMobileMenu">
+                            <X class="h-5 w-5" />
+                        </button>
+                    </div>
+                    <div class="relative mt-5">
+                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-teal-200">Menu Utama</p>
+                        <p class="mt-1 text-sm text-white/70">Akses maklumat dan perkhidmatan koperasi.</p>
+                    </div>
                 </div>
-                <nav class="flex-1 space-y-1 overflow-y-auto p-4">
-                    <Link v-for="item in navItems" :key="item.label" :href="item.url || '#'" class="block rounded-xl px-3 py-3 font-semibold text-slate-800 hover:bg-teal-50" @click="mobileMenuOpen = false">
-                        {{ item.label }}
-                    </Link>
+                <nav class="flex-1 space-y-1.5 overflow-y-auto px-4 py-5">
+                    <div v-for="item in navItems" :key="item.label">
+                        <button v-if="item.children?.length" type="button" class="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-[15px] font-semibold text-slate-700 transition hover:bg-white hover:text-teal-800 hover:shadow-sm" :aria-expanded="activeMobileMenu === item.label" @click="toggleMobileMenu(item.label)">
+                            {{ item.label }}
+                            <ChevronDown class="h-4 w-4 text-slate-400 transition-transform" :class="activeMobileMenu === item.label ? 'rotate-180 text-teal-600' : ''" />
+                        </button>
+                        <Link v-else :href="item.url || '#'" class="flex items-center justify-between rounded-xl px-4 py-3 text-[15px] font-semibold text-slate-700 transition hover:bg-white hover:text-teal-800 hover:shadow-sm" @click="closeMobileMenu">
+                            {{ item.label }}
+                            <ChevronRight class="h-4 w-4 text-slate-300" />
+                        </Link>
+                        <div v-if="item.children?.length && activeMobileMenu === item.label" class="mx-2 mb-2 mt-1 space-y-1 border-l-2 border-teal-200 pl-3">
+                            <Link v-for="child in item.children" :key="child.url || child.label" :href="child.url || '#'" class="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-teal-50 hover:text-teal-800" @click="closeMobileMenu">
+                                {{ child.label }}
+                            </Link>
+                        </div>
+                    </div>
                 </nav>
+                <div class="border-t border-slate-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                    <Link href="/membership/apply" class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F8F83] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0d7d73]" @click="closeMobileMenu">
+                        Mohon Jadi Ahli <ArrowRight class="h-4 w-4" />
+                    </Link>
+                    <Link href="/admin/login" class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50" @click="closeMobileMenu">
+                        <LogIn class="h-4 w-4" /> Log Masuk
+                    </Link>
+                </div>
             </aside>
         </div>
 
         <!-- HERO SECTION -->
-        <section class="relative h-[600px] overflow-hidden sm:h-[650px] lg:h-[760px]">
+        <section class="relative h-[560px] overflow-hidden sm:h-[650px] lg:h-[760px]">
             <div v-if="hero.items?.length" class="absolute inset-0">
                 <div
                     v-for="(slide, i) in hero.items"
@@ -234,7 +290,7 @@ const address = computed(() => [
             <div v-else class="absolute inset-0 bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900" />
             <div class="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/40 to-slate-950/75" />
 
-            <div class="relative mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+            <div class="relative mx-auto flex h-full max-w-7xl items-center px-5 pt-10 sm:px-6 sm:pt-0 lg:px-8">
                 <div class="max-w-xl lg:ml-0">
                     <p v-if="hero.items?.[0]?.subtitle" class="text-sm font-semibold uppercase tracking-widest text-teal-300">
                         {{ hero.items[0].subtitle }}
@@ -245,11 +301,11 @@ const address = computed(() => [
                     <p v-if="hero.items?.[0]?.description" class="mt-4 max-w-lg text-base leading-relaxed text-slate-200 sm:text-lg">
                         {{ hero.items[0].description }}
                     </p>
-                    <div class="mt-8 flex flex-wrap gap-4">
+                    <div class="mt-7 flex flex-col gap-3 min-[400px]:flex-row min-[400px]:flex-wrap sm:mt-8 sm:gap-4">
                         <a
                             v-if="hero.items?.[0]?.button_url"
                             :href="hero.items[0].button_url"
-                            class="inline-flex items-center gap-2 rounded-full bg-[#0F8F83] px-6 py-3 font-semibold text-white transition hover:bg-[#0d7d73]"
+                            class="inline-flex items-center justify-center gap-2 rounded-full bg-[#0F8F83] px-6 py-3 font-semibold text-white transition hover:bg-[#0d7d73]"
                         >
                             {{ hero.items[0].button_text || 'Ketahui Lebih Lanjut' }}
                             <ArrowRight class="h-4 w-4" />
@@ -257,7 +313,7 @@ const address = computed(() => [
                         <a
                             v-if="hero.items?.[0]?.button_url"
                             href="#"
-                            class="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+                            class="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
                         >
                             <Play class="h-4 w-4 fill-white" />
                             Tonton Video
@@ -270,9 +326,9 @@ const address = computed(() => [
         <!-- STATS SECTION -->
         <section class="relative z-10 -mt-14 px-4 sm:px-6 lg:px-8">
             <div class="mx-auto max-w-5xl rounded-2xl border border-slate-100 bg-white px-5 py-5 shadow-[0_12px_35px_rgba(15,23,42,0.10)] sm:px-7">
-                <div class="grid grid-cols-2 gap-y-6 divide-slate-100 lg:grid-cols-4 lg:divide-x">
-                    <div v-for="item in stats.items" :key="item.id" class="flex items-center gap-3 px-2 sm:px-4">
-                        <component :is="resolveIcon(item.icon)" class="h-8 w-8 shrink-0 text-[#0F8F83]" stroke-width="1.6" />
+                <div class="grid grid-cols-2 gap-x-2 gap-y-6 divide-slate-100 lg:grid-cols-4 lg:divide-x">
+                    <div v-for="item in stats.items" :key="item.id" class="flex flex-col items-center gap-2 px-1 text-center min-[400px]:flex-row min-[400px]:items-start min-[400px]:gap-3 min-[400px]:px-2 min-[400px]:text-left sm:px-4">
+                        <component :is="resolveIcon(item.icon)" class="h-7 w-7 shrink-0 text-[#0F8F83] sm:h-8 sm:w-8" stroke-width="1.6" />
                         <div>
                             <div class="text-lg font-bold leading-tight text-slate-900 sm:text-xl">{{ item.value || '...' }}</div>
                             <div class="mt-1 text-xs leading-tight text-slate-500">{{ item.title || '...' }}</div>
@@ -341,7 +397,7 @@ const address = computed(() => [
                             <h2 class="mt-3 text-2xl font-bold">{{ benefit.title || 'Dalam Membantu Koperasi' }}</h2>
                             <p class="mt-4 text-sm leading-6 text-slate-300">{{ benefit.subtitle || 'Sokongan dan penyertaan ahli menjadi tunjang kekuatan koperasi.' }}</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-x-5 gap-y-6 px-7 pb-9 lg:py-9 lg:pl-6 lg:pr-9">
+                        <div class="grid gap-5 px-7 pb-9 min-[440px]:grid-cols-2 min-[440px]:gap-x-5 min-[440px]:gap-y-6 lg:py-9 lg:pl-6 lg:pr-9">
                             <div v-for="item in benefit.items?.slice(0, 4)" :key="item.id" class="flex gap-3">
                                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-teal-400/30 text-teal-300">
                                     <component :is="resolveIcon(item.icon)" class="h-5 w-5" />
@@ -387,7 +443,7 @@ const address = computed(() => [
         <section class="pb-16 sm:pb-20">
             <div class="mx-auto grid max-w-6xl gap-5 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
                 <article v-for="(item, index) in promotion.items?.slice(0, 2)" :key="item.id" class="relative min-h-64 overflow-hidden rounded-2xl p-7 text-white sm:p-9" :class="index === 0 ? 'bg-[#082c3b]' : 'bg-[#078579]'">
-                    <div class="relative z-10 max-w-[58%]">
+                    <div class="relative z-10 max-w-[78%] sm:max-w-[58%]">
                         <p v-if="item.subtitle" class="text-xs font-bold uppercase tracking-[0.16em] text-teal-200">{{ item.subtitle }}</p>
                         <h2 class="mt-2 text-2xl font-bold leading-tight">{{ item.title }}</h2>
                         <p v-if="item.description" class="mt-3 text-sm leading-6 text-white/75">{{ item.description }}</p>
@@ -425,7 +481,7 @@ const address = computed(() => [
         <section class="pb-16">
             <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-7 rounded-2xl bg-slate-50 px-6 py-8 sm:px-8 lg:grid-cols-[1.25fr_2fr] lg:items-center">
-                    <div class="flex gap-4">
+                    <div class="flex flex-col gap-4 min-[400px]:flex-row">
                         <Users class="h-11 w-11 shrink-0 text-[#0F8F83]" stroke-width="1.5" />
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">{{ membership.title || 'Berminat Menjadi Ahli Koperasi?' }}</h2>

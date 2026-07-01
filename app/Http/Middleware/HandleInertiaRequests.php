@@ -9,6 +9,7 @@ use App\Enums\MembershipApplicationStatus;
 use App\Models\AnsuranApplication;
 use App\Models\FinancingApplication;
 use App\Models\FormSubmission;
+use App\Models\FrontpageSection;
 use App\Models\MembershipApplication;
 use App\Models\Program;
 use App\Services\Files\MemberPhotoStorageService;
@@ -67,6 +68,39 @@ class HandleInertiaRequests extends Middleware
                 'status' => fn () => $request->session()->get('status'),
             ],
             'appSettings' => fn () => app(SettingsService::class)->shared(),
+            'popup' => function () use ($request): ?array {
+                $user = $request->user();
+                if (! $user || $user->role !== 'member') return null;
+                if ($request->session()->get('popup_dismissed')) return null;
+
+                $cooperativeId = app(SettingsService::class)->activeCooperative()?->id;
+                if (! $cooperativeId) return null;
+
+                $section = FrontpageSection::query()
+                    ->where('cooperative_id', $cooperativeId)
+                    ->where('key', 'member_popup')
+                    ->active()
+                    ->with('items')
+                    ->first();
+
+                if (! $section || $section->items->isEmpty()) return null;
+
+                $item = $section->items->first();
+
+                $item = $section->items->first();
+
+                $result = [
+                    'image_url' => $item->imageUrl(),
+                    'title' => $section->title ?: $item->title,
+                    'content' => $item->description,
+                    'button_text' => $item->button_text,
+                    'button_url' => $item->button_url,
+                ];
+
+                \Log::debug('[popup] showing popup', $result);
+
+                return $result;
+            },
         ];
     }
 
@@ -141,10 +175,12 @@ class HandleInertiaRequests extends Middleware
                 'active_patterns' => [
                     '/admin/banners', '/admin/banners/*',
                     '/admin/posters', '/admin/posters/*',
+                    '/admin/frontpage/sections/member_popup',
                 ],
                 'children' => [
                     ['label' => 'Banner', 'href' => route('admin.banners.index'), 'permission' => AccessControl::PERMISSION_MANAGE_BANNERS],
                     ['label' => 'Poster', 'href' => route('admin.posters.index'), 'permission' => AccessControl::PERMISSION_MANAGE_POSTERS],
+                    ['label' => 'Popup Ahli', 'href' => route('admin.frontpage.sections.edit', 'member_popup'), 'permission' => AccessControl::PERMISSION_MANAGE_MEMBER_POPUP],
                 ],
             ],
             [

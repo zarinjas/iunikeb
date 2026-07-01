@@ -128,6 +128,8 @@ class AccessControl
 
     public const PERMISSION_MANAGE_POSTERS = 'manage_posters';
 
+    public const PERMISSION_MANAGE_MEMBER_POPUP = 'manage_member_popup';
+
     public static function roles(): array
     {
         return [
@@ -199,6 +201,7 @@ class AccessControl
             self::PERMISSION_MANAGE_AI_KNOWLEDGE,
             self::PERMISSION_MANAGE_BANNERS,
             self::PERMISSION_MANAGE_POSTERS,
+            self::PERMISSION_MANAGE_MEMBER_POPUP,
         ];
     }
 
@@ -263,6 +266,7 @@ class AccessControl
                 self::PERMISSION_MANAGE_AI_KNOWLEDGE,
                 self::PERMISSION_MANAGE_BANNERS,
                 self::PERMISSION_MANAGE_POSTERS,
+                self::PERMISSION_MANAGE_MEMBER_POPUP,
             ],
             self::ROLE_MEMBER => [
                 self::PERMISSION_MEMBER_ACCESS,

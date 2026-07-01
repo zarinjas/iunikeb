@@ -66,6 +66,7 @@ const itemTone = (label) => ({
     Aduan: 'bg-rose-50 text-rose-600',
     'Caruman Ahli': 'bg-sky-50 text-sky-600',
     Pentadbiran: 'bg-slate-100 text-slate-600',
+    'Popup Ahli': 'bg-amber-50 text-orange-600',
 }[label] ?? 'bg-slate-100 text-slate-600');
 
 const staffLabel = computed(() => {

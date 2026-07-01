@@ -131,9 +131,22 @@ class FrontpageDemoSeeder extends Seeder
 
         // Footer
         FrontpageSection::updateOrCreate(
-            ['cooperative_id' => $coopId, 'key' => 'footer'],
-            ['title' => 'Footer', 'is_active' => true]
+            ['cooperative_id' => $coopId, 'key' => 'member_popup'],
+            ['title' => 'Selamat Datang ke Portal Ahli!', 'is_active' => true]
         );
+
+        // Member Popup
+        $popup = FrontpageSection::updateOrCreate(
+            ['cooperative_id' => $coopId, 'key' => 'member_popup'],
+            ['title' => 'Selamat Datang ke Portal Ahli!', 'is_active' => false]
+        );
+        $popup->allItems()->delete();
+        FrontpageSectionItem::create([
+            'section_id' => $popup->id, 'sort_order' => 1, 'is_active' => true,
+            'description' => 'Nikmati pelbagai kemudahan digital koperasi melalui portal ahli. Kemaskini profil, mohon pembiayaan, dan urus keahlian anda.',
+            'button_text' => 'Teruskan',
+            'button_url' => '/member/dashboard',
+        ]);
 
         // Header Menu
         Menu::where('cooperative_id', $coopId)->delete();

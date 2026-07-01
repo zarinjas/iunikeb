@@ -7,6 +7,19 @@ use Illuminate\Support\Facades\Storage;
 
 class ManifestController extends Controller
 {
+    protected function detectMimeType(string $path): string
+    {
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return match ($ext) {
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            default => 'image/png',
+        };
+    }
+
     public function __invoke(SettingsService $settings)
     {
         $coop = $settings->activeCooperative();
@@ -20,10 +33,11 @@ class ManifestController extends Controller
 
         if ($coop?->logo_path) {
             $logoUrl = Storage::disk('public')->url($coop->logo_path);
+            $mime = $this->detectMimeType($coop->logo_path);
             $icons = [
-                ['src' => $logoUrl, 'sizes' => '192x192', 'type' => 'image/png'],
-                ['src' => $logoUrl, 'sizes' => '512x512', 'type' => 'image/png'],
-                ['src' => $logoUrl, 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+                ['src' => $logoUrl, 'sizes' => '192x192', 'type' => $mime],
+                ['src' => $logoUrl, 'sizes' => '512x512', 'type' => $mime],
+                ['src' => $logoUrl, 'sizes' => '512x512', 'type' => $mime, 'purpose' => 'maskable'],
             ];
         }
 

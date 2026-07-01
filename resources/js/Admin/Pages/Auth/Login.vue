@@ -3,6 +3,7 @@ import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AuthCardLayout from '@/Shared/Components/Auth/AuthCardLayout.vue';
 import PasswordInput from '@/Shared/Components/Auth/PasswordInput.vue';
+import FaceIdButton from '@/Shared/Components/Auth/FaceIdButton.vue';
 import TextInput from '@/Shared/Components/Form/TextInput.vue';
 import { Button } from '@/Shared/Components/ui/button';
 
@@ -44,12 +45,12 @@ const quickLogin = (url) => {
 </script>
 
 <template>
-    <Head title="Log Masuk Admin" />
+    <Head title="Log Masuk" />
 
     <AuthCardLayout
         variant="admin"
-        title="Log Masuk Admin"
-        subtitle="Masukkan e-mel dan kata laluan pentadbir anda."
+        title="Log Masuk ke Akaun Anda"
+        subtitle="Masukkan e-mel dan kata laluan untuk meneruskan."
         :cooperative-name="cooperativeName"
         :logo-url="logoUrl"
         :primary-color="primaryColor"
@@ -81,11 +82,19 @@ const quickLogin = (url) => {
 
             <Button
                 type="submit"
-                class="w-full bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-800 hover:to-teal-700"
+                class="h-12 w-full rounded-xl text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition hover:brightness-95"
+                :style="{ backgroundColor: primaryColor }"
                 :disabled="form.processing"
             >
                 {{ form.processing ? 'Sedang diproses...' : 'Log Masuk' }}
             </Button>
+
+            <div class="relative py-1">
+                <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-200" /></div>
+                <div class="relative flex justify-center"><span class="bg-white px-3 text-xs text-slate-400">atau gunakan biometrik</span></div>
+            </div>
+
+            <FaceIdButton />
         </form>
 
         <template #quickLogin>
