@@ -449,7 +449,7 @@ function fmtPlaceholder(val) {
           :readonly="!isInteractive"
           class="flex-1 bg-transparent px-3 py-2.5 text-sm focus:outline-none tabular-nums"
           :class="!isInteractive ? 'text-slate-400' : ''"
-          @input="isInteractive ? onAmountInput : null" />
+          @input="isInteractive ? onAmountInput($event) : null" />
       </div>
 
       <!-- Financing Tenure -->
