@@ -120,6 +120,9 @@ Route::prefix('member')->name('member.')->group(function (): void {
         Route::post('/financing/applications/{application}/stamped-form', [FinancingApplicationController::class, 'uploadStampedForm'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('financing.applications.stamped-form.store');
+        Route::post('/financing/applications/{application}/submit-documents', [FinancingApplicationController::class, 'submitDocuments'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('financing.applications.submit-documents');
         Route::post('/financing/applications/{application}/supporting-documents', [FinancingApplicationController::class, 'uploadSupportingDocument'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('financing.applications.supporting-documents.upload');

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertTriangle, ArrowLeft, Ban, CheckCircle, Clock, Download, FileText, Info, Loader2, Printer, Upload, UserPlus, X } from 'lucide-vue-next';
+import { AlertTriangle, ArrowLeft, Ban, CheckCircle, Clock, Download, FileText, Info, Printer, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import MemberLayout from '@/Member/Layouts/MemberLayout.vue';
 import PageHeader from '@/Shared/Components/PageHeader.vue';
@@ -26,26 +26,6 @@ const cancelReason = ref('');
 const cancelLoading = ref(false);
 
 const isPendingStamp = computed(() => props.application.status === 'menunggu_muat_naik');
-
-const showStampUpload = ref(false);
-const stampFile = ref(null);
-const productFormFile = ref(null);
-const stampLoading = ref(false);
-
-const hasProductForm = computed(() => !!props.application.form_template_url);
-
-const uploadStamp = () => {
-    if (!stampFile.value) return;
-    stampLoading.value = true;
-    const fd = new FormData();
-    fd.append('file', stampFile.value, stampFile.value.name);
-    if (productFormFile.value) {
-        fd.append('product_form', productFormFile.value, productFormFile.value.name);
-    }
-    router.post(props.application.stamped_form.upload_url, fd, {
-        onFinish: () => { stampLoading.value = false; },
-    });
-};
 
 const csrfToken = computed(() => document.querySelector('meta[name="csrf-token"]')?.content || '');
 const uploadList = ref([...(props.application.supporting_document_uploads || [])]);
@@ -134,7 +114,27 @@ const customSections = computed(() => {
                 </div>
             </div>
 
-            <DocumentPackagePanel :documents="application.generated_documents || []" />
+            <!-- Banner arahan: status menunggu muat naik -->
+            <div v-if="isPendingStamp" class="flex items-start gap-4 rounded-3xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                    <Info class="h-5 w-5 text-blue-700" />
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-blue-900">Tindakan Diperlukan: Cetak, Cop &amp; Muat Naik Semula</p>
+                    <ol class="mt-2 space-y-1 text-sm text-blue-800 list-decimal list-inside">
+                        <li>Muat turun setiap dokumen dalam <strong>Pakej Dokumen</strong> di bawah.</li>
+                        <li>Cetak, isi ruangan, dapatkan cop rasmi dan tandatangan yang diperlukan.</li>
+                        <li>Muat naik semula setiap dokumen melalui butang <strong>Muat Naik</strong> pada setiap item.</li>
+                        <li>Selepas <strong>semua dokumen</strong> dimuat naik, klik butang <strong>Selesai dan Hantar</strong> untuk meneruskan semakan.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <DocumentPackagePanel
+                :documents="application.generated_documents || []"
+                :can-submit="isPendingStamp"
+                :submit-url="application.submit_documents_url"
+            />
 
             <SupportingDocumentUploader
                 :supporting-documents="application.supporting_documents || []"
@@ -144,117 +144,7 @@ const customSections = computed(() => {
                 @uploaded="(upload) => uploadList.push(upload)"
             />
 
-            <!-- Banner arahan: status menunggu muat naik -->
-            <div v-if="isPendingStamp && !application.stamped_form?.uploaded" class="flex items-start gap-4 rounded-3xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
-                    <Info class="h-5 w-5 text-blue-700" />
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-blue-900">Tindakan Diperlukan: Cetak, Cop &amp; Muat Naik Semula</p>
-                    <ol class="mt-2 space-y-1 text-sm text-blue-800 list-decimal list-inside">
-                        <li>Klik butang <strong>Cetak Borang</strong> di atas untuk pergi ke halaman cetakan.</li>
-                        <li v-if="application.form_template_url">Cetak <strong>kedua-dua borang</strong> — borang permohonan dan borang khas produk.</li>
-                        <li>Isi semua ruangan, dapatkan cop rasmi dan tandatangan yang diperlukan.</li>
-                        <li>Imbas dan muat naik semula melalui butang <strong>Muat Naik Dokumen</strong> di bawah.</li>
-                    </ol>
-                </div>
-            </div>
-
-            <!-- Status: Pending Stamp Upload -->
-            <div v-if="isPendingStamp" class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
-                <div class="flex items-start gap-4">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                        <Upload class="h-5 w-5 text-amber-700" />
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold text-amber-900">Menunggu Muat Naik Borang Bercop</p>
-                        <p class="mt-1 text-sm text-amber-800">
-                            Permohonan anda sedang menunggu borang yang telah dicop dan ditandatangani. Sila muat naik borang tersebut untuk meneruskan proses semakan.
-                        </p>
-
-                        <div v-if="!application.stamped_form?.uploaded" class="mt-4">
-                            <div v-if="showStampUpload" class="space-y-4">
-
-                                <!-- Upload 1: Borang Permohonan -->
-                                <div class="space-y-1.5">
-                                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-900">
-                                        1. Borang Permohonan (dicop &amp; ditandatangani)
-                                    </p>
-                                    <div v-if="!stampFile"
-                                        class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-amber-300 bg-white p-5 text-center cursor-pointer transition hover:border-amber-500"
-                                        @click="$refs.stampInput.click()">
-                                        <Upload class="h-5 w-5 text-amber-400 mb-1.5" />
-                                        <p class="text-sm font-medium text-slate-700">Klik untuk pilih fail</p>
-                                        <p class="text-xs text-slate-400 mt-0.5">PDF, JPG atau PNG • Maks 10MB</p>
-                                        <input ref="stampInput" type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
-                                            @change="(e) => { stampFile = e.target.files?.[0] ?? null; }" />
-                                    </div>
-                                    <div v-else class="flex items-center gap-3 rounded-2xl border border-teal-200 bg-white p-3.5">
-                                        <CheckCircle class="h-5 w-5 shrink-0 text-teal-600" />
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-slate-900 truncate">{{ stampFile.name }}</p>
-                                            <p class="text-xs text-slate-500">{{ (stampFile.size / 1024).toFixed(0) }} KB</p>
-                                        </div>
-                                        <button type="button" class="text-slate-400 hover:text-red-500" @click="stampFile = null">
-                                            <X class="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Upload 2: Borang Khas Produk (jika ada) -->
-                                <div v-if="hasProductForm" class="space-y-1.5">
-                                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-900">
-                                        2. Borang Khas Produk (dicop &amp; ditandatangani)
-                                    </p>
-                                    <div v-if="!productFormFile"
-                                        class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-amber-300 bg-white p-5 text-center cursor-pointer transition hover:border-amber-500"
-                                        @click="$refs.productFormInput.click()">
-                                        <Upload class="h-5 w-5 text-amber-400 mb-1.5" />
-                                        <p class="text-sm font-medium text-slate-700">Klik untuk pilih fail</p>
-                                        <p class="text-xs text-slate-400 mt-0.5">PDF, JPG atau PNG • Maks 10MB</p>
-                                        <input ref="productFormInput" type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
-                                            @change="(e) => { productFormFile = e.target.files?.[0] ?? null; }" />
-                                    </div>
-                                    <div v-else class="flex items-center gap-3 rounded-2xl border border-teal-200 bg-white p-3.5">
-                                        <CheckCircle class="h-5 w-5 shrink-0 text-teal-600" />
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-slate-900 truncate">{{ productFormFile.name }}</p>
-                                            <p class="text-xs text-slate-500">{{ (productFormFile.size / 1024).toFixed(0) }} KB</p>
-                                        </div>
-                                        <button type="button" class="text-slate-400 hover:text-red-500" @click="productFormFile = null">
-                                            <X class="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="flex gap-2">
-                                    <Button type="button"
-                                        :disabled="!stampFile || (hasProductForm && !productFormFile) || stampLoading"
-                                        @click="uploadStamp">
-                                        <Loader2 v-if="stampLoading" class="mr-2 h-4 w-4 animate-spin" />
-                                        <Upload v-else class="mr-2 h-4 w-4" />
-                                        {{ stampLoading ? 'Memuat Naik...' : 'Hantar Dokumen' }}
-                                    </Button>
-                                    <Button type="button" variant="ghost" @click="showStampUpload = false; stampFile = null; productFormFile = null;">Batal</Button>
-                                </div>
-                            </div>
-                            <div v-else>
-                                <Button type="button" @click="showStampUpload = true">
-                                    <Upload class="mr-2 h-4 w-4" />
-                                    Muat Naik Dokumen
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div v-else class="mt-3 flex items-center gap-2 text-sm text-amber-800">
-                            <CheckCircle class="h-4 w-4 text-teal-600" />
-                            Dokumen telah dimuat naik pada {{ application.stamped_form.uploaded_at }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stamped form already uploaded -->
+            <!-- Stamped form already uploaded (backward compat) -->
             <div v-if="application.stamped_form?.uploaded && !isPendingStamp"
                 class="flex items-center gap-3 rounded-3xl border border-teal-200 bg-teal-50 p-5 shadow-sm">
                 <CheckCircle class="h-5 w-5 shrink-0 text-teal-600" />

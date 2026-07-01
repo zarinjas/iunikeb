@@ -436,6 +436,8 @@ class FinancingApplicationController extends MemberPortalController
                     'download_url' => $application->stampedFormUrl(),
                     'upload_url' => route('member.financing.applications.stamped-form.store', $application),
                 ],
+                'can_submit' => $application->status === FinancingApplicationStatus::PendingUpload,
+                'submit_documents_url' => route('member.financing.applications.submit-documents', $application),
                 'documents' => $application->documents->map(fn (FinancingApplicationDocument $document) => [
                     'id' => $document->id,
                     'label' => $document->label,
@@ -574,6 +576,18 @@ class FinancingApplicationController extends MemberPortalController
         }
 
         return back()->with('status', 'Dokumen berjaya dimuat naik.');
+    }
+
+    public function submitDocuments(Request $request, FinancingApplication $application): RedirectResponse
+    {
+        $member = $this->currentMember($request);
+        abort_unless($application->member_id === $member->id, 404);
+
+        $this->financing->submitDocuments($application);
+
+        return redirect()
+            ->route('member.financing.applications.show', $application)
+            ->with('status', 'Semua dokumen telah dihantar. Permohonan anda kini dalam semakan.');
     }
 
     public function uploadSupportingDocument(Request $request, FinancingApplication $application): JsonResponse

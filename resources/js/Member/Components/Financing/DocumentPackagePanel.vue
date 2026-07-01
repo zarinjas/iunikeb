@@ -1,16 +1,23 @@
 <script setup>
-import { Download, Upload } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { CheckCircle, Download, Loader2, Send, Upload } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Button } from '@/Shared/Components/ui/button';
 import StatusBadge from '@/Shared/Components/StatusBadge.vue';
 
 const props = defineProps({
     documents: { type: Array, default: () => [] },
+    canSubmit: { type: Boolean, default: false },
+    submitUrl: { type: String, default: '' },
 });
 
 const files = ref({});
 const uploading = ref({});
+const submitLoading = ref(false);
+
+const requiredDocs = computed(() => props.documents.filter((d) => d.requires_upload));
+const uploadedDocs = computed(() => requiredDocs.value.filter((d) => d.status === 'uploaded'));
+const allRequiredUploaded = computed(() => requiredDocs.value.length > 0 && uploadedDocs.value.length === requiredDocs.value.length);
 
 const upload = (document) => {
     const file = files.value[document.id];
@@ -25,6 +32,14 @@ const upload = (document) => {
             uploading.value[document.id] = false;
             files.value[document.id] = null;
         },
+    });
+};
+
+const submitAll = () => {
+    if (!props.canSubmit || !props.submitUrl) return;
+    submitLoading.value = true;
+    router.post(props.submitUrl, {}, {
+        onFinish: () => { submitLoading.value = false; },
     });
 };
 </script>
@@ -72,6 +87,33 @@ const upload = (document) => {
                     </template>
                 </div>
             </div>
+        </div>
+
+        <div v-if="requiredDocs.length > 0" class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="flex items-center gap-3">
+                <CheckCircle v-if="allRequiredUploaded" class="h-5 w-5 shrink-0 text-teal-600" />
+                <Upload v-else class="h-5 w-5 shrink-0 text-slate-400" />
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-900">
+                        {{ uploadedDocs.length }}/{{ requiredDocs.length }} dokumen dimuat naik
+                    </p>
+                    <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                        <div
+                            class="h-full rounded-full transition-all duration-300"
+                            :class="allRequiredUploaded ? 'bg-teal-500' : 'bg-teal-400'"
+                            :style="{ width: ((uploadedDocs.length / requiredDocs.length) * 100) + '%' }"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="canSubmit && allRequiredUploaded" class="mt-4">
+            <Button type="button" class="w-full" :disabled="submitLoading" @click="submitAll">
+                <Loader2 v-if="submitLoading" class="mr-2 h-4 w-4 animate-spin" />
+                <Send v-else class="mr-2 h-4 w-4" />
+                {{ submitLoading ? 'Menghantar...' : 'Selesai dan Hantar' }}
+            </Button>
         </div>
     </div>
 </template>

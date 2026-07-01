@@ -8,6 +8,7 @@ use App\Models\FinancingApplication;
 use App\Models\FinancingApplicationDocument;
 use App\Models\FinancingApplicationHistory;
 use App\Models\FinancingApplication as FAHistory;
+use App\Models\FinancingGeneratedDocument;
 use App\Models\FinancingGuarantor;
 use App\Models\FinancingProductField;
 use App\Models\User;
@@ -183,6 +184,40 @@ class FinancingService
             $application->update(['status' => FinancingApplicationStatus::InReview]);
             $this->recordHistory($application, 'Borang bercop diterima', FinancingApplicationStatus::PendingUpload, FinancingApplicationStatus::InReview);
         }
+    }
+
+    public function submitDocuments(FinancingApplication $application): void
+    {
+        DB::transaction(function () use ($application) {
+            if ($application->status !== FinancingApplicationStatus::PendingUpload) {
+                throw new \RuntimeException('Hanya permohonan berstatus Menunggu Muat Naik boleh dihantar.');
+            }
+
+            $application->loadMissing('generatedDocuments');
+
+            $requiredDocs = $application->generatedDocuments
+                ->filter(fn (FinancingGeneratedDocument $doc) => $doc->requires_upload);
+
+            if ($requiredDocs->isEmpty()) {
+                throw new \RuntimeException('Tiada dokumen wajib yang perlu dimuat naik.');
+            }
+
+            $allUploaded = $requiredDocs->every(
+                fn (FinancingGeneratedDocument $doc) => $doc->status === FinancingGeneratedDocument::STATUS_UPLOADED
+            );
+
+            if (! $allUploaded) {
+                throw new \RuntimeException('Tidak semua dokumen wajib telah dimuat naik.');
+            }
+
+            $application->update(['status' => FinancingApplicationStatus::InReview]);
+            $this->recordHistory(
+                $application,
+                'Semua dokumen dimuat naik',
+                FinancingApplicationStatus::PendingUpload,
+                FinancingApplicationStatus::InReview
+            );
+        });
     }
 
     public function uploadDocument(

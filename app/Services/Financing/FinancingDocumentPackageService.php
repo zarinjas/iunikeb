@@ -83,16 +83,14 @@ class FinancingDocumentPackageService
             ]);
         }
 
-        if ($application->product?->requires_stamped_upload || $items->isEmpty()) {
-            $items->push((object) [
-                'code' => 'application_summary',
-                'name' => 'Borang Permohonan Pembiayaan',
-                'type' => 'application_form',
-                'source_type' => 'html',
-                'requires_upload' => (bool) $application->product?->requires_stamped_upload,
-                'requires_verification' => (bool) $application->product?->requires_stamped_upload,
-            ]);
-        }
+        $items->push((object) [
+            'code' => 'application_summary',
+            'name' => 'Borang Permohonan Pembiayaan',
+            'type' => 'application_form',
+            'source_type' => 'html',
+            'requires_upload' => true,
+            'requires_verification' => true,
+        ]);
 
         $guarantorCount = $application->guarantors()->count();
         if ($guarantorCount > 0) {

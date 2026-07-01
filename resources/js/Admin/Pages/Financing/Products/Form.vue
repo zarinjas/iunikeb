@@ -906,12 +906,6 @@ const allFields = computed(() => localSections.value.flatMap((s) =>
                             :class="form.errors.guarantor_count ? 'border-red-500' : ''" />
                         <p v-if="form.errors.guarantor_count" class="mt-1 text-sm text-red-700">{{ form.errors.guarantor_count }}</p>
                     </div>
-                    <div class="md:col-span-2">
-                        <ToggleSwitch id="product-stamped" v-model="form.requires_stamped_upload" label="Perlukan Muat Naik Borang Bercop?" description="Aktifkan jika pemohon perlu memuat naik borang bercop." />
-                    </div>
-                    <div v-if="form.requires_stamped_upload" class="md:col-span-2">
-                        <TextareaInput id="product-stamped-instructions" v-model="form.stamped_upload_instructions" label="Arahan Muat Naik Borang Bercop" :error="form.errors.stamped_upload_instructions" />
-                    </div>
                 </FormSection>
 
                 <FormSection title="Paparan" :columns="2">
