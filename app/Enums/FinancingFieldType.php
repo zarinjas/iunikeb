@@ -25,6 +25,9 @@ enum FinancingFieldType: string
     case InstructionText = 'instruction_text';
     case DocumentChecklist = 'document_checklist';
     case SignatureBlock = 'signature_block';
+    case Signature = 'signature';
+    case AgreementCheckbox = 'agreement_checkbox';
+    case OfficeUseBox = 'office_use_box';
     case AddressMy = 'address_my';
     case DigitalSignature = 'digital_signature';
     case MemberName = 'member_name';
@@ -74,6 +77,8 @@ enum FinancingFieldType: string
             self::AddressSpouse,
             self::AddressBeneficiary,
             self::DigitalSignature,
+            self::Signature,
+            self::AgreementCheckbox,
             self::MemberName,
             self::MemberAddress,
             self::MemberIdentityNo,
@@ -105,6 +110,7 @@ enum FinancingFieldType: string
             self::InstructionText,
             self::DocumentChecklist,
             self::SignatureBlock,
+            self::OfficeUseBox,
         ];
     }
 
@@ -132,6 +138,9 @@ enum FinancingFieldType: string
             self::InstructionText => 'Arahan',
             self::DocumentChecklist => 'Senarai Semak Dokumen',
             self::SignatureBlock => 'Blok Tandatangan',
+            self::Signature => 'Tandatangan',
+            self::AgreementCheckbox => 'Akuan (Checkbox)',
+            self::OfficeUseBox => 'Ruang Kegunaan Pejabat',
             self::AddressMy => 'Alamat (Malaysia)',
             self::DigitalSignature => 'Tandatangan Digital',
             self::MemberName => 'Nama Penuh (Ahli)',
@@ -164,6 +173,7 @@ enum FinancingFieldType: string
             self::IdentityNo, self::Number, self::Currency, self::Date,
             self::Select, self::Radio, self::Checkbox, self::YesNo,
             self::RepeaterTable, self::File, self::AddressMy, self::AddressSpouse, self::AddressBeneficiary, self::DigitalSignature,
+            self::Signature, self::AgreementCheckbox,
             self::MemberName, self::MemberAddress, self::MemberIdentityNo, self::MemberDob,
             self::MemberPhone, self::MemberEmail, self::MemberPosition,
             self::MemberEmployer, self::MemberMemberNo, self::MemberEmploymentNo,
@@ -172,7 +182,7 @@ enum FinancingFieldType: string
             self::MemberDepartment, self::MemberSpouseName, self::MemberSpousePhone => 'input',
             self::RichText, self::Image, self::PdfDocument,
             self::Note, self::InstructionText,
-            self::DocumentChecklist, self::SignatureBlock => 'content',
+            self::DocumentChecklist, self::SignatureBlock, self::OfficeUseBox => 'content',
         };
     }
 

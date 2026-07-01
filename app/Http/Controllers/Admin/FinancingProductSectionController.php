@@ -5,12 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FinancingProduct;
 use App\Models\FinancingProductSection;
+use App\Services\AuditLogService;
+use App\Services\Forms\FormSectionTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FinancingProductSectionController extends Controller
 {
+    public function __construct(
+        private readonly AuditLogService $auditLog,
+        private readonly FormSectionTemplateService $templates,
+    ) {}
+
     public function store(Request $request, FinancingProduct $product): JsonResponse
     {
         $validated = $request->validate([
@@ -102,6 +109,34 @@ class FinancingProductSectionController extends Controller
         }
 
         return response()->json(['ok' => true]);
+    }
+
+    public function saveAsTemplate(FinancingProduct $product, FinancingProductSection $section): JsonResponse
+    {
+        abort_unless($section->financing_product_id === $product->id, 404);
+
+        $template = $this->templates->saveFinancingSectionAsTemplate($section->load('product'), request()->user());
+
+        $this->auditLog->record('financing_product_section.template_saved', $product, newValues: $template->toArray());
+
+        return response()->json(['ok' => true, 'message' => 'Template seksyen berjaya disimpan.']);
+    }
+
+    public function storeFromTemplate(Request $request, FinancingProduct $product): JsonResponse
+    {
+        $validated = $request->validate([
+            'template_ref' => ['required', 'string'],
+        ]);
+
+        $section = $this->templates->createFinancingSectionFromTemplate($product, $validated['template_ref']);
+
+        $this->auditLog->record('financing_product_section.created_from_template', $product, newValues: $section->toArray());
+
+        return response()->json([
+            'ok' => true,
+            'section' => $this->serializeSection($section),
+            'message' => 'Seksyen daripada template berjaya ditambah.',
+        ]);
     }
 
     private function serializeSection(FinancingProductSection $section): array

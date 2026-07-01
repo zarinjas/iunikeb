@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'created_by',
     'name',
     'slug',
+    'module',
     'title',
     'description',
     'page_break_before',

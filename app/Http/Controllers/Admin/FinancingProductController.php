@@ -10,6 +10,7 @@ use App\Models\FinancingProduct;
 use App\Models\FinancingProductField;
 use App\Models\FinancingProductSection;
 use App\Services\FinancingService;
+use App\Services\Forms\FormSectionTemplateService;
 use App\Services\Settings\SettingsService;
 use App\Support\AccessControl;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,7 @@ class FinancingProductController extends Controller
     public function __construct(
         private readonly SettingsService $settings,
         private readonly FinancingService $financing,
+        private readonly FormSectionTemplateService $templateService,
     ) {}
 
     public function index(Request $request): Response
@@ -114,6 +116,7 @@ class FinancingProductController extends Controller
             'categoryOptions' => $this->categoryOptions(),
             'fieldTypeOptions' => $this->fieldTypeOptions(),
             'sections' => $sections,
+            'sectionTemplates' => $this->templateService->availableTemplates($this->settings->activeCooperative()?->id),
             'documentTemplates' => $product->documentTemplates->map(fn ($template) => [
                 'id' => $template->id,
                 'code' => $template->code,

@@ -27,7 +27,7 @@ const isAddressType = computed(() =>
 );
 
 const isContent = computed(() =>
-  ['rich_text', 'image', 'pdf_document', 'note', 'instruction_text', 'document_checklist', 'signature_block'].includes(props.field.type)
+  ['rich_text', 'image', 'pdf_document', 'note', 'instruction_text', 'document_checklist', 'signature_block', 'office_use_box'].includes(props.field.type)
 );
 
 const addressValue = computed(() => {
@@ -213,6 +213,12 @@ function fmtPlaceholder(val) {
       </div>
     </div>
 
+    <!-- Office Use Box -->
+    <div v-else-if="field.type === 'office_use_box'" class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3">
+      <p class="text-xs font-semibold text-slate-900">{{ field.label }}</p>
+      <p class="mt-1 text-xs text-slate-500">{{ field.help_text || 'Ruangan ini disediakan untuk kegunaan pejabat.' }}</p>
+    </div>
+
     <!-- Digital Signature (member-fill mode) -->
     <div v-else-if="field.type === 'digital_signature'">
       <template v-if="isInteractive">
@@ -230,6 +236,24 @@ function fmtPlaceholder(val) {
         <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-xs text-slate-400">
           <FileText class="mx-auto mb-1 h-4 w-4" />
           Tandatangan Digital
+        </div>
+      </template>
+    </div>
+
+    <!-- Signature (simple) -->
+    <div v-else-if="field.type === 'signature'">
+      <template v-if="isInteractive">
+        <SignaturePad
+          :model-value="value"
+          :label="field.label + (field.is_required ? ' *' : '')"
+          :error="props.errors"
+          @update:model-value="(val) => emit('update:value', val)"
+        />
+      </template>
+      <template v-else>
+        <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-xs text-slate-400">
+          <FileText class="mx-auto mb-1 h-4 w-4" />
+          Tandatangan
         </div>
       </template>
     </div>
@@ -403,6 +427,22 @@ function fmtPlaceholder(val) {
             class="h-4 w-4 accent-teal-700"
             @change="isInteractive ? onRadioChange('tidak') : null" /> Tidak
         </label>
+      </div>
+
+      <!-- Agreement Checkbox -->
+      <div v-else-if="field.type === 'agreement_checkbox'" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <label class="flex items-start gap-3">
+          <input type="checkbox"
+            :checked="isInteractive ? value : false"
+            :disabled="!isInteractive"
+            class="mt-0.5 h-4 w-4 accent-teal-700"
+            @change="isInteractive ? emit('update:value', $event.target.checked) : null" />
+          <div class="space-y-1">
+            <p class="text-sm font-semibold text-slate-900">{{ field.label }}<span v-if="field.is_required" class="text-red-500"> *</span></p>
+            <p v-if="field.help_text" class="text-xs text-slate-600">{{ field.help_text }}</p>
+          </div>
+        </label>
+        <p v-if="showErrors" class="mt-2 text-sm text-red-600">{{ props.errors }}</p>
       </div>
 
       <!-- File Upload -->

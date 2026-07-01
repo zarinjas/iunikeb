@@ -6,6 +6,7 @@ import {
     ArrowLeft,
     ArrowDown,
     ArrowUp,
+    CopyPlus,
     Download,
     Eye,
     Layers,
@@ -44,6 +45,7 @@ const props = defineProps({
     categoryOptions: { type: Array, default: () => [] },
     fieldTypeOptions: { type: Array, default: () => [] },
     sections: { type: Array, default: () => [] },
+    sectionTemplates: { type: Array, default: () => [] },
     documentTemplates: { type: Array, default: () => [] },
     supportingDocuments: { type: Array, default: () => [] },
 });
@@ -66,7 +68,7 @@ const categoryOptions = computed(() => [
 
 const isOptionsType = (type) => ['select', 'radio', 'checkbox'].includes(type);
 const isRichTextType = (type) => type === 'rich_text';
-const isNoteType = (type) => ['note', 'instruction_text'].includes(type);
+const isNoteType = (type) => ['note', 'instruction_text', 'office_use_box'].includes(type);
 const isAdminUploadType = (type) => ['image', 'pdf_document'].includes(type);
 const isChecklistType = (type) => type === 'document_checklist';
 const isSignatureType = (type) => type === 'signature_block';
@@ -289,6 +291,30 @@ const showSaveSuccess = (message) => {
 watch(() => page.props.flash?.status, (val) => {
     if (val) showSaveSuccess(val);
 });
+
+const templateForm = ref({ template_ref: '' });
+
+const saveSectionAsTemplate = async (sectionId) => {
+    const data = await apiPost(`/admin/financing/products/${props.product.id}/sections/${sectionId}/save-template`, {});
+    if (data.ok) {
+        showSaveSuccess(data.message || 'Template seksyen berjaya disimpan.');
+    }
+};
+
+const applySectionTemplate = async () => {
+    if (!templateForm.value.template_ref) return;
+    sectionSubmitting.value = true;
+    const data = await apiPost(
+        `/admin/financing/products/${props.product.id}/sections/from-template`,
+        { template_ref: templateForm.value.template_ref },
+    );
+    if (data.ok && data.section) {
+        localSections.value.push({ ...data.section, fields: data.section.fields || [] });
+        templateForm.value.template_ref = '';
+        showSaveSuccess(data.message || 'Seksyen daripada template berjaya ditambah.');
+    }
+    sectionSubmitting.value = false;
+};
 
 const downloadPdf = async () => {
     const el = document.querySelector('.print-area');
@@ -941,7 +967,27 @@ const allFields = computed(() => localSections.value.flatMap((s) =>
                     <p class="mt-1 text-sm text-slate-500">Tambah seksyen untuk menyusun medan dalam borang permohonan.</p>
                 </div>
 
-                <div v-else class="space-y-4">
+                <div v-if="sectionTemplates.length > 0" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="mb-4 text-base font-semibold text-slate-950">Tambah Daripada Template</h2>
+                    <p class="mb-3 text-sm text-slate-500">Template digunakan secara salinan. Edit selepas ditambah tidak akan mengubah template asal.</p>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[200px]">
+                            <select v-model="templateForm.template_ref"
+                                class="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm shadow-sm focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700/20">
+                                <option value="" disabled>Pilih template</option>
+                                <option v-for="template in sectionTemplates" :key="template.ref" :value="template.ref">
+                                    {{ template.name }} ({{ template.fields_count }} field)
+                                </option>
+                            </select>
+                        </div>
+                        <Button type="button" :disabled="!templateForm.template_ref || sectionSubmitting" @click="applySectionTemplate">
+                            <CopyPlus class="mr-2 h-4 w-4" />
+                            Guna Template
+                        </Button>
+                    </div>
+                </div>
+
+                <div v-if="localSections.length > 0" class="space-y-4">
                     <article v-for="section in localSections" :key="section.id" class="rounded-2xl border border-slate-200 bg-white shadow-sm">
                         <div class="flex flex-wrap items-start justify-between gap-3 p-5">
                             <div class="flex-1 space-y-1">
@@ -956,6 +1002,7 @@ const allFields = computed(() => localSections.value.flatMap((s) =>
                                 <Button type="button" variant="outline" size="sm" title="Naikkan" :disabled="section === localSections[0]" @click="moveSection(section.id, 'move-up')"><ArrowUp class="h-4 w-4" /></Button>
                                 <Button type="button" variant="outline" size="sm" title="Turunkan" :disabled="section === localSections[localSections.length - 1]" @click="moveSection(section.id, 'move-down')"><ArrowDown class="h-4 w-4" /></Button>
                                 <Button type="button" variant="outline" size="sm" @click="startEditSection(section)"><Pencil class="h-4 w-4" /></Button>
+                                <Button type="button" variant="outline" size="sm" title="Simpan Sebagai Template" @click="saveSectionAsTemplate(section.id)"><Save class="h-4 w-4" /></Button>
                                 <Button type="button" variant="destructive" size="sm" @click="deleteSectionTarget = section.id"><Trash2 class="h-4 w-4" /></Button>
                             </div>
                         </div>

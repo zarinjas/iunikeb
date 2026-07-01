@@ -157,6 +157,12 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/financing/products/{product}/sections/{section}/move-down', [FinancingProductSectionController::class, 'moveDown'])
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)
             ->name('financing.products.sections.move-down');
+        Route::post('/financing/products/{product}/sections/from-template', [FinancingProductSectionController::class, 'storeFromTemplate'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)
+            ->name('financing.products.sections.store-from-template');
+        Route::post('/financing/products/{product}/sections/{section}/save-template', [FinancingProductSectionController::class, 'saveAsTemplate'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)
+            ->name('financing.products.sections.save-template');
 
         Route::post('/financing/products/{product}/fields', [FinancingProductFieldController::class, 'store'])
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_FINANCING_PRODUCTS)

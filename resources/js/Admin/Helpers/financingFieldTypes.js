@@ -392,6 +392,17 @@ export const FIELD_TYPES = [
     keywords: ['tandatangan digital', 'signature', 'digital', 'ttd'],
     showPlaceholder: false,
   },
+  {
+    ...baseInput,
+    value: 'signature',
+    label: 'Tandatangan',
+    description: 'Ruang tandatangan untuk diisi pemohon.',
+    category: 'dokumen',
+    icon: 'PenLine',
+    keywords: ['tandatangan', 'signature', 'ttd'],
+    showRequired: false,
+    showPlaceholder: false,
+  },
 
   // ── Kandungan Borang ──
   {
@@ -467,6 +478,32 @@ export const FIELD_TYPES = [
     showRequired: false,
     showPlaceholder: false,
     showHelpText: false,
+  },
+  {
+    ...baseInput,
+    value: 'office_use_box',
+    label: 'Ruang Kegunaan Pejabat',
+    description: 'Ruang untuk cop rasmi, tandatangan, semakan, dan catatan pejabat.',
+    category: 'kandungan',
+    icon: 'Building2',
+    keywords: ['pejabat', 'office', 'cop', 'semakan', 'catatan'],
+    group: 'content',
+    isNoteContent: true,
+    showLabel: false,
+    showRequired: false,
+    showPlaceholder: false,
+    showHelpText: false,
+  },
+  {
+    ...baseInput,
+    value: 'agreement_checkbox',
+    label: 'Akuan (Checkbox)',
+    description: 'Pemohon perlu menandakan kotak persetujuan.',
+    category: 'pilihan',
+    icon: 'CheckSquare',
+    keywords: ['akuan', 'agreement', 'persetujuan', 'checkbox', 'setuju'],
+    showPlaceholder: false,
+    showHelpText: true,
   },
 
   // ── Jadual & Khas ──

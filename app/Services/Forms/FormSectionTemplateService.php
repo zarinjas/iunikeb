@@ -4,6 +4,8 @@ namespace App\Services\Forms;
 
 use App\Enums\FormFieldDisplayMode;
 use App\Enums\FormFieldType;
+use App\Models\FinancingProduct;
+use App\Models\FinancingProductSection;
 use App\Models\FormSection;
 use App\Models\FormSectionTemplate;
 use App\Models\OnlineForm;
@@ -14,7 +16,7 @@ use Illuminate\Support\Str;
 
 class FormSectionTemplateService
 {
-    public function availableTemplates(?int $cooperativeId): array
+    public function availableTemplates(?int $cooperativeId, ?string $module = null): array
     {
         $presets = collect($this->presetTemplates())
             ->map(fn (array $template) => [
@@ -36,6 +38,7 @@ class FormSectionTemplateService
                 'title' => $template->title,
                 'description' => $template->description,
                 'source' => 'saved',
+                'module' => $template->module,
                 'fields_count' => count($template->fields_json ?? []),
             ]);
 
@@ -51,6 +54,35 @@ class FormSectionTemplateService
             'created_by' => $user->id,
             'name' => $section->title,
             'slug' => $this->uniqueTemplateSlug($section->form->cooperative_id, $section->title),
+            'module' => 'online_form',
+            'title' => $section->title,
+            'description' => $section->description,
+            'page_break_before' => $section->page_break_before,
+            'fields_json' => $section->fields->map(fn ($field) => [
+                'label' => $field->label,
+                'field_key' => $field->field_key,
+                'type' => $field->type->value,
+                'placeholder' => $field->placeholder,
+                'help_text' => $field->help_text,
+                'is_required' => $field->is_required,
+                'options_json' => $field->options_json ?? [],
+                'validation_json' => $field->validation_json ?? [],
+                'settings_json' => $field->settings_json ?? [],
+                'is_active' => $field->is_active,
+            ])->values()->all(),
+        ]);
+    }
+
+    public function saveFinancingSectionAsTemplate(FinancingProductSection $section, User $user): FormSectionTemplate
+    {
+        $section->loadMissing(['fields' => fn ($query) => $query->latest()]);
+
+        return FormSectionTemplate::query()->create([
+            'cooperative_id' => $section->product->cooperative_id,
+            'created_by' => $user->id,
+            'name' => $section->title,
+            'slug' => $this->uniqueTemplateSlug($section->product->cooperative_id, $section->title),
+            'module' => 'financing_product',
             'title' => $section->title,
             'description' => $section->description,
             'page_break_before' => $section->page_break_before,
@@ -101,6 +133,42 @@ class FormSectionTemplateService
         });
     }
 
+    public function createFinancingSectionFromTemplate(FinancingProduct $product, string $templateRef): FinancingProductSection
+    {
+        $template = $this->resolveTemplate($templateRef, $product->cooperative_id);
+
+        return DB::transaction(function () use ($product, $template): FinancingProductSection {
+            $maxOrder = $product->sections()->max('sort_order') ?? 0;
+
+            $section = $product->sections()->create([
+                'title' => $template['title'],
+                'description' => $template['description'],
+                'page_break_before' => (bool) ($template['page_break_before'] ?? false),
+                'sort_order' => $maxOrder + 1,
+                'is_active' => true,
+            ]);
+
+            foreach ($template['fields'] as $index => $field) {
+                $section->fields()->create([
+                    'financing_product_id' => $product->id,
+                    'label' => $field['label'],
+                    'field_key' => $this->uniqueFinancingFieldKey($product, $field['field_key'] ?: $field['label']),
+                    'type' => $field['type'],
+                    'placeholder' => $field['placeholder'] ?? null,
+                    'help_text' => $field['help_text'] ?? null,
+                    'is_required' => (bool) ($field['is_required'] ?? false),
+                    'options_json' => $field['options_json'] ?? [],
+                    'validation_json' => $field['validation_json'] ?? [],
+                    'settings_json' => $field['settings_json'] ?? [],
+                    'sort_order' => $index + 1,
+                    'is_active' => (bool) ($field['is_active'] ?? true),
+                ]);
+            }
+
+            return $section->load('fields');
+        });
+    }
+
     private function resolveTemplate(string $templateRef, ?int $cooperativeId): array
     {
         if (str_starts_with($templateRef, 'preset:')) {
@@ -134,6 +202,20 @@ class FormSectionTemplateService
         $counter = 2;
 
         while ($form->fields()->withTrashed()->where('field_key', $candidate)->exists()) {
+            $candidate = $key.'_'.$counter;
+            $counter++;
+        }
+
+        return $candidate;
+    }
+
+    private function uniqueFinancingFieldKey(FinancingProduct $product, string $baseKey): string
+    {
+        $key = Str::snake($baseKey);
+        $candidate = $key;
+        $counter = 2;
+
+        while ($product->fields()->where('field_key', $candidate)->exists()) {
             $candidate = $key.'_'.$counter;
             $counter++;
         }
