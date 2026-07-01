@@ -12,6 +12,8 @@ import QrScannerModal from '@/Shared/Components/QrScannerModal.vue';
 import ProgramCarousel from '@/Shared/Components/ProgramCarousel.vue';
 import StatusBadge from '@/Shared/Components/StatusBadge.vue';
 import PwaInstallBanner from '@/Shared/Components/PwaInstallBanner.vue';
+import Dialog from '@/Shared/Components/ui/dialog/Dialog.vue';
+import MemberDigitalCard from '@/Shared/Components/MemberDigitalCard.vue';
 
 const props = defineProps({
     member: { type: Object, required: true },
@@ -36,6 +38,7 @@ const page = usePage();
 const contact = computed(() => page.props.appSettings?.contact ?? {});
 const coop = computed(() => page.props.appSettings?.cooperative ?? {});
 
+const showCardDialog = ref(false);
 const showCaruman = ref(false);
 const activeCarumanTab = ref('semasa');
 
@@ -276,6 +279,25 @@ onMounted(async () => {
                     </div>
                 </div>
             </section>
+
+            <!-- Click to view full card -->
+            <p v-if="digitalCard" class="-mt-2 text-center">
+                <button
+                    class="text-xs font-medium text-teal-600 underline underline-offset-2 transition-colors hover:text-teal-700"
+                    @click="showCardDialog = true"
+                >
+                    Klik untuk lihat kad penuh
+                </button>
+            </p>
+
+            <!-- Full card popup dialog -->
+            <Dialog v-model:open="showCardDialog">
+                <MemberDigitalCard
+                    :cooperative="$page.props.appSettings.cooperative"
+                    :card="digitalCard"
+                    size="large"
+                />
+            </Dialog>
 
             <!-- Account Summary / Caruman — banking style -->
             <section v-if="caruman" class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-50 via-white to-emerald-50 shadow-sm ring-1 ring-teal-100/30">

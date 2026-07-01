@@ -87,17 +87,13 @@ class HandleInertiaRequests extends Middleware
 
                 $item = $section->items->first();
 
-                $item = $section->items->first();
-
-                $result = [
+                return [
                     'image_url' => $item->imageUrl(),
-                    'title' => $section->title ?: $item->title,
+                    'title' => $item->title,
                     'content' => $item->description,
                     'button_text' => $item->button_text,
                     'button_url' => $item->button_url,
                 ];
-
-                \Log::debug('[popup] showing popup', $result);
 
                 return $result;
             },
