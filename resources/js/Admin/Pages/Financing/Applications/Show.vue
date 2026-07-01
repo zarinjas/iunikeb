@@ -27,6 +27,33 @@ const canStartReview = computed(() =>
     ['dihantar', 'menunggu_muat_naik'].includes(props.application.status?.value),
 );
 
+const canProcess = computed(() =>
+    props.application.status?.value === 'dalam_proses',
+);
+
+const canReturnToReview = computed(() =>
+    props.application.status?.value === 'dokumen_tidak_lengkap',
+);
+
+const reviewSubmitting = ref(false);
+
+const incompleteSubmitting = ref(false);
+const incompleteDialogOpen = ref(false);
+const incompleteNotes = ref('');
+
+const approveSubmitting = ref(false);
+const approveDialogOpen = ref(false);
+const approvedAmount = ref(props.application.amount_requested);
+const approvedTenure = ref(props.application.tenure_months);
+const approveNotes = ref('');
+
+const rejectSubmitting = ref(false);
+const rejectDialogOpen = ref(false);
+const rejectReason = ref('');
+
+const deleteSubmitting = ref(false);
+const deleteDialogOpen = ref(false);
+
 const downloadStampedForm = () => {
     window.open(`/admin/financing/applications/${props.application.id}/stamped-form/download`, '_blank');
 };
@@ -77,6 +104,17 @@ const submitReject = () => {
         onFinish: () => {
             rejectSubmitting.value = false;
             rejectDialogOpen.value = false;
+        },
+    });
+};
+
+const submitDelete = () => {
+    deleteSubmitting.value = true;
+    router.delete(`/admin/financing/applications/${props.application.id}`, {
+        preserveScroll: true,
+        onFinish: () => {
+            deleteSubmitting.value = false;
+            deleteDialogOpen.value = false;
         },
     });
 };

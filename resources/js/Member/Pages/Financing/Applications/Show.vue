@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertTriangle, ArrowLeft, Ban, CheckCircle, Clock, Download, FileText, Info, Printer, UserPlus, X } from 'lucide-vue-next';
+import { AlertTriangle, ArrowLeft, Ban, CheckCircle, Clock, Download, FileText, Info, Printer, Send, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import MemberLayout from '@/Member/Layouts/MemberLayout.vue';
 import PageHeader from '@/Shared/Components/PageHeader.vue';
@@ -143,6 +143,58 @@ const customSections = computed(() => {
                 :csrf-token="csrfToken"
                 @uploaded="(upload) => uploadList.push(upload)"
             />
+
+            <!-- Banner: Dihantar -->
+            <div v-if="application.status === 'dihantar'" class="flex items-start gap-4 rounded-3xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-100">
+                    <Send class="h-6 w-6 text-teal-700" />
+                </div>
+                <div class="flex-1">
+                    <p class="text-base font-semibold text-teal-900">Permohonan Dihantar</p>
+                    <p class="mt-1 text-sm text-teal-800">
+                        Permohonan anda telah berjaya dihantar. Sila tunggu makluman seterusnya melalui emel.
+                    </p>
+                    <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2.5 py-1 font-semibold text-teal-700">
+                            <Send class="h-3.5 w-3.5" />Dihantar
+                        </span>
+                        <span class="text-slate-300">───</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-400">
+                            <Clock class="h-3.5 w-3.5" />Dalam Semakan
+                        </span>
+                        <span class="text-slate-300">───</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-400">
+                            <Clock class="h-3.5 w-3.5" />Keputusan
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner: Dalam Semakan -->
+            <div v-if="application.status === 'dalam_proses'" class="flex items-start gap-4 rounded-3xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                    <Clock class="h-6 w-6 text-indigo-700" />
+                </div>
+                <div class="flex-1">
+                    <p class="text-base font-semibold text-indigo-900">Permohonan Dalam Semakan</p>
+                    <p class="mt-1 text-sm text-indigo-800">
+                        Permohonan anda sedang diproses oleh pihak kami. Anda akan dimaklumkan melalui emel apabila terdapat sebarang kemas kini status.
+                    </p>
+                    <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2.5 py-1 text-teal-700">
+                            <CheckCircle class="h-3.5 w-3.5" />Dihantar
+                        </span>
+                        <span class="text-slate-300">───</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 font-semibold text-indigo-700">
+                            <Clock class="h-3.5 w-3.5" />Dalam Semakan
+                        </span>
+                        <span class="text-slate-300">───</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-400">
+                            <Clock class="h-3.5 w-3.5" />Keputusan
+                        </span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Stamped form already uploaded (backward compat) -->
             <div v-if="application.stamped_form?.uploaded && !isPendingStamp"
