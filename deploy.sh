@@ -43,6 +43,7 @@ ssh "$VPS_HOST" << EOF
 
   echo "--- Build frontend ---"
   npm ci && npm run build
+  rm -f public/hot
 
   echo "--- Migration ---"
   php artisan migrate --force
