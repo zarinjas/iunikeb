@@ -1,6 +1,7 @@
 <script setup>
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useSwipe } from '@vueuse/core';
 
 const props = defineProps({
     banners: { type: Array, required: true },
@@ -8,6 +9,7 @@ const props = defineProps({
 
 const currentIndex = ref(0);
 const isPaused = ref(false);
+const container = ref(null);
 let intervalId = null;
 
 const totalBanners = computed(() => props.banners.length);
@@ -48,6 +50,15 @@ function resetTimer() {
     startTimer();
 }
 
+// Touch swipe via @vueuse/core — reuses existing project dependency
+useSwipe(container, {
+    threshold: 50,
+    onSwipeEnd(e, direction) {
+        if (direction === 'left') next();
+        else if (direction === 'right') prev();
+    },
+});
+
 onMounted(() => {
     startTimer();
 });
@@ -60,6 +71,7 @@ onUnmounted(() => {
 <template>
     <div
         v-if="banners.length"
+        ref="container"
         class="relative w-full overflow-hidden rounded-2xl"
         @mouseenter="isPaused = true"
         @mouseleave="isPaused = false"
@@ -88,10 +100,11 @@ onUnmounted(() => {
             </div>
         </template>
 
+        <!-- Nav buttons: hidden on mobile, visible on sm+ -->
         <button
             v-if="totalBanners > 1"
             type="button"
-            class="absolute left-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 shadow-sm backdrop-blur-sm transition hover:bg-white/90"
+            class="absolute left-3 top-1/2 z-10 hidden sm:flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 shadow-sm backdrop-blur-sm transition hover:bg-white/90"
             @click="prev"
         >
             <ChevronLeft class="h-3 w-3 text-slate-700" />
@@ -100,7 +113,7 @@ onUnmounted(() => {
         <button
             v-if="totalBanners > 1"
             type="button"
-            class="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 shadow-sm backdrop-blur-sm transition hover:bg-white/90"
+            class="absolute right-3 top-1/2 z-10 hidden sm:flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white/75 shadow-sm backdrop-blur-sm transition hover:bg-white/90"
             @click="next"
         >
             <ChevronRight class="h-3 w-3 text-slate-700" />

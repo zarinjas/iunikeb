@@ -85,7 +85,7 @@ const toggleOpen = () => {
                 class="pointer-events-auto flex h-full w-full flex-col bg-white/95 backdrop-blur-xl lg:h-[600px] lg:w-[400px] lg:rounded-2xl lg:shadow-2xl lg:ring-1 lg:ring-black/5"
                 :class="isOpen ? 'lg:animate-in lg:slide-in-from-bottom-4 lg:fade-in' : ''"
             >
-                <div class="flex shrink-0 items-center justify-between rounded-t-2xl bg-gradient-to-r from-teal-600 to-emerald-600 px-5 py-4 text-white">
+                <div class="flex shrink-0 items-center justify-between lg:rounded-t-2xl bg-gradient-to-r from-teal-600 to-emerald-600 px-5 pb-4 text-white max-lg:pt-[max(1rem,env(safe-area-inset-top))] lg:py-4">
                     <div class="flex items-center gap-3">
                         <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
                             <Sparkles class="h-5 w-5" />

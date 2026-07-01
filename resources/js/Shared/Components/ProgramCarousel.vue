@@ -9,32 +9,32 @@ const props = defineProps({
     programs: { type: Array, required: true },
 });
 
-const currentIndex = ref(0);
-const perView = ref(3);
+const track = ref(null);
+const activeIndex = ref(0);
 const isPaused = ref(false);
 let autoPlayTimer = null;
+let observer = null;
 
 const total = computed(() => props.programs.length);
-const maxIndex = computed(() => Math.max(0, total.value - perView.value));
 
-function updatePerView() {
-    perView.value = window.innerWidth < 640 ? 1 : 3;
-    if (currentIndex.value > maxIndex.value) {
-        currentIndex.value = maxIndex.value;
+// Scroll within the track only — never moves the page viewport
+function scrollToIndex(index) {
+    if (!track.value) return;
+    const el = track.value.children[index];
+    if (el) {
+        track.value.scrollTo({ left: el.offsetLeft, behavior: 'smooth' });
     }
 }
 
 function prev() {
-    currentIndex.value = Math.max(0, currentIndex.value - 1);
+    const next = Math.max(0, activeIndex.value - 1);
+    scrollToIndex(next);
     resetAutoPlay();
 }
 
 function next() {
-    if (currentIndex.value < maxIndex.value) {
-        currentIndex.value++;
-    } else {
-        currentIndex.value = 0;
-    }
+    const next = activeIndex.value < total.value - 1 ? activeIndex.value + 1 : 0;
+    scrollToIndex(next);
     resetAutoPlay();
 }
 
@@ -43,15 +43,12 @@ function rsvp(programId, response) {
 }
 
 function startAutoPlay() {
-    if (total.value <= perView.value) return;
+    if (total.value <= 1) return;
     stopAutoPlay();
     autoPlayTimer = setInterval(() => {
         if (!isPaused.value) {
-            if (currentIndex.value < maxIndex.value) {
-                currentIndex.value++;
-            } else {
-                currentIndex.value = 0;
-            }
+            const nextIdx = activeIndex.value < total.value - 1 ? activeIndex.value + 1 : 0;
+            scrollToIndex(nextIdx);
         }
     }, 4000);
 }
@@ -69,41 +66,55 @@ function resetAutoPlay() {
 }
 
 onMounted(() => {
-    updatePerView();
-    window.addEventListener('resize', updatePerView);
     startAutoPlay();
+
+    if (track.value && total.value > 1) {
+        observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const idx = Array.from(track.value.children).indexOf(entry.target);
+                        if (idx !== -1) activeIndex.value = idx;
+                    }
+                });
+            },
+            { root: track.value, threshold: 0.5 },
+        );
+        Array.from(track.value.children).forEach((child) => observer.observe(child));
+    }
 });
 
 onUnmounted(() => {
-    window.removeEventListener('resize', updatePerView);
     stopAutoPlay();
+    if (observer) observer.disconnect();
 });
 </script>
 
 <template>
-    <div v-if="programs.length" class="relative" @mouseenter="isPaused = true" @mouseleave="isPaused = false">
-        <button
-            v-if="currentIndex > 0"
-            class="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
-            @click="prev"
+    <div
+        v-if="programs.length"
+        class="relative"
+        @mouseenter="isPaused = true"
+        @mouseleave="isPaused = false"
+    >
+        <!-- Scroll-snap track -->
+        <div
+            ref="track"
+            class="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none"
+            style="-webkit-overflow-scrolling: touch;"
         >
-            <ChevronLeft class="h-4 w-4 text-slate-600" />
-        </button>
-
-        <div class="flex gap-4 overflow-hidden">
             <div
-                v-for="(pg, idx) in programs"
+                v-for="pg in programs"
                 :key="pg.id"
-                v-show="idx >= currentIndex && idx < currentIndex + perView"
-                class="flex-1 overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-100 transition-all duration-200 hover:shadow-xl"
+                class="flex-none w-full sm:w-[calc(33.333%-8px)] snap-start overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-100 transition-all duration-200 hover:shadow-md"
             >
                 <Link :href="`/member/programs/${pg.id}`" class="block">
-                    <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+                    <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
                         <img
                             v-if="pg.cover_image_url"
                             :src="pg.cover_image_url"
                             :alt="pg.title"
-                            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            class="h-full w-full object-cover"
                         />
                         <div v-else class="flex h-full items-center justify-center text-slate-300">
                             <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,12 +127,12 @@ onUnmounted(() => {
                         </span>
                     </div>
 
-                    <div class="space-y-1.5 p-4 pb-3">
-                        <p class="text-sm font-semibold text-slate-900 line-clamp-1 group-hover:text-teal-700">{{ pg.title }}</p>
+                    <div class="space-y-1.5 p-3">
+                        <p class="text-sm font-semibold text-slate-900 line-clamp-1">{{ pg.title }}</p>
                         <p v-if="pg.description" class="text-xs leading-relaxed text-slate-500 line-clamp-2">
                             {{ pg.description }}
                         </p>
-                        <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
                             <span class="inline-flex items-center gap-1 rounded-md bg-teal-50 px-1.5 py-0.5 text-teal-600">{{ pg.start_date_formatted }}</span>
                             <span>{{ pg.start_time }}</span>
                             <span v-if="pg.location" class="flex items-center gap-0.5">
@@ -132,14 +143,14 @@ onUnmounted(() => {
                     </div>
                 </Link>
 
-                <!-- RSVP buttons (not part of link) -->
-                <div class="px-4 pb-4">
+                <!-- RSVP buttons -->
+                <div class="px-3 pb-3">
                     <div class="flex gap-2">
                         <Button
                             type="button"
                             size="sm"
                             variant="outline"
-                            class="flex-1 h-8 rounded-full text-xs font-medium"
+                            class="flex-1 h-8 rounded-lg text-xs font-medium"
                             :class="pg.user_rsvp?.response === 'hadir' ? 'bg-teal-50 border-teal-300 text-teal-700 hover:bg-teal-100' : 'border-slate-200 text-slate-600 hover:border-teal-200 hover:text-teal-600'"
                             @click="rsvp(pg.id, 'hadir')"
                         >
@@ -149,7 +160,7 @@ onUnmounted(() => {
                             type="button"
                             size="sm"
                             variant="outline"
-                            class="flex-1 h-8 rounded-full text-xs font-medium"
+                            class="flex-1 h-8 rounded-lg text-xs font-medium"
                             :class="pg.user_rsvp?.response === 'mungkin' ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100' : 'border-slate-200 text-slate-600 hover:border-amber-200 hover:text-amber-600'"
                             @click="rsvp(pg.id, 'mungkin')"
                         >
@@ -159,7 +170,7 @@ onUnmounted(() => {
                             type="button"
                             size="sm"
                             variant="outline"
-                            class="flex-1 h-8 rounded-full text-xs font-medium"
+                            class="flex-1 h-8 rounded-lg text-xs font-medium"
                             :class="pg.user_rsvp?.response === 'tidak_hadir' ? 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100' : 'border-slate-200 text-slate-600 hover:border-red-200 hover:text-red-600'"
                             @click="rsvp(pg.id, 'tidak_hadir')"
                         >
@@ -170,20 +181,30 @@ onUnmounted(() => {
             </div>
         </div>
 
+        <!-- Nav buttons: hidden on mobile -->
         <button
-            v-if="currentIndex < maxIndex"
-            class="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
+            v-if="activeIndex > 0"
+            class="absolute -left-3 top-1/2 z-10 hidden sm:flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
+            @click="prev"
+        >
+            <ChevronLeft class="h-4 w-4 text-slate-600" />
+        </button>
+
+        <button
+            v-if="activeIndex < total - 1"
+            class="absolute -right-3 top-1/2 z-10 hidden sm:flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
             @click="next"
         >
             <ChevronRight class="h-4 w-4 text-slate-600" />
         </button>
 
-        <div v-if="total > perView" class="mt-3 flex justify-center gap-1.5">
+        <!-- Pagination dots -->
+        <div v-if="total > 1" class="mt-3 flex justify-center gap-1.5">
             <span
-                v-for="i in maxIndex + 1"
+                v-for="(_, i) in programs"
                 :key="i"
                 class="h-1.5 rounded-full transition-all"
-                :class="i - 1 === currentIndex ? 'w-4 bg-teal-600' : 'w-1.5 bg-slate-300'"
+                :class="i === activeIndex ? 'w-4 bg-teal-600' : 'w-1.5 bg-slate-300'"
             />
         </div>
     </div>

@@ -7,54 +7,64 @@ const props = defineProps({
     products: { type: Array, required: true },
 });
 
-const currentIndex = ref(0);
-const perView = ref(3);
+const track = ref(null);
+const activeIndex = ref(0);
+let observer = null;
 
 const total = computed(() => props.products.length);
-const maxIndex = computed(() => Math.max(0, total.value - perView.value));
 
-function updatePerView() {
-    perView.value = window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3;
-    if (currentIndex.value > maxIndex.value) {
-        currentIndex.value = maxIndex.value;
+// Scroll within the track only — never moves the page viewport
+function scrollToIndex(index) {
+    if (!track.value) return;
+    const el = track.value.children[index];
+    if (el) {
+        track.value.scrollTo({ left: el.offsetLeft, behavior: 'smooth' });
     }
 }
 
 function prev() {
-    currentIndex.value = Math.max(0, currentIndex.value - 1);
+    scrollToIndex(Math.max(0, activeIndex.value - 1));
 }
 
 function next() {
-    currentIndex.value = Math.min(maxIndex.value, currentIndex.value + 1);
+    scrollToIndex(Math.min(total.value - 1, activeIndex.value + 1));
 }
 
 onMounted(() => {
-    updatePerView();
-    window.addEventListener('resize', updatePerView);
+    if (track.value && total.value > 1) {
+        observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const idx = Array.from(track.value.children).indexOf(entry.target);
+                        if (idx !== -1) activeIndex.value = idx;
+                    }
+                });
+            },
+            { root: track.value, threshold: 0.5 },
+        );
+        Array.from(track.value.children).forEach((child) => observer.observe(child));
+    }
 });
 
 onUnmounted(() => {
-    window.removeEventListener('resize', updatePerView);
+    if (observer) observer.disconnect();
 });
 </script>
 
 <template>
     <div v-if="products.length" class="relative">
-        <button
-            v-if="currentIndex > 0"
-            class="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
-            @click="prev"
+        <!-- Scroll-snap track -->
+        <div
+            ref="track"
+            class="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none"
+            style="-webkit-overflow-scrolling: touch;"
         >
-            <ChevronLeft class="h-4 w-4 text-slate-600" />
-        </button>
-
-        <div class="flex gap-4 overflow-hidden">
             <Link
-                v-for="(product, idx) in products"
+                v-for="product in products"
                 :key="product.id"
                 :href="product.url"
-                v-show="idx >= currentIndex && idx < currentIndex + perView"
-                class="group flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
+                class="group flex-none w-[75%] sm:w-[calc(33.333%-8px)] snap-start overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
             >
                 <div class="aspect-square overflow-hidden bg-slate-100">
                     <img
@@ -67,10 +77,10 @@ onUnmounted(() => {
                         <ShoppingBag class="h-10 w-10" />
                     </div>
                 </div>
-                <div class="p-4">
+                <div class="p-3">
                     <p class="text-xs font-medium uppercase tracking-wide text-slate-400">{{ product.category_name || 'Produk' }}</p>
-                    <p class="mt-1 font-semibold text-slate-950 line-clamp-2">{{ product.name }}</p>
-                    <p class="mt-1 text-sm text-slate-600">
+                    <p class="mt-1 text-sm font-semibold text-slate-950 line-clamp-2">{{ product.name }}</p>
+                    <p class="mt-1 text-xs text-slate-600">
                         <template v-if="product.min_price === product.max_price">
                             RM {{ Number(product.min_price).toFixed(2) }}
                         </template>
@@ -82,25 +92,35 @@ onUnmounted(() => {
             </Link>
         </div>
 
+        <!-- Nav buttons: hidden on mobile -->
         <button
-            v-if="currentIndex < maxIndex"
-            class="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
+            v-if="activeIndex > 0"
+            class="absolute -left-3 top-1/2 z-10 hidden sm:flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
+            @click="prev"
+        >
+            <ChevronLeft class="h-4 w-4 text-slate-600" />
+        </button>
+
+        <button
+            v-if="activeIndex < total - 1"
+            class="absolute -right-3 top-1/2 z-10 hidden sm:flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50"
             @click="next"
         >
             <ChevronRight class="h-4 w-4 text-slate-600" />
         </button>
 
-        <div v-if="total > perView" class="mt-3 flex justify-center gap-1.5">
+        <!-- Pagination dots -->
+        <div v-if="total > 1" class="mt-3 flex justify-center gap-1.5">
             <span
-                v-for="i in maxIndex + 1"
+                v-for="(_, i) in products"
                 :key="i"
                 class="h-1.5 rounded-full transition-all"
-                :class="i - 1 === currentIndex ? 'w-4 bg-teal-600' : 'w-1.5 bg-slate-300'"
+                :class="i === activeIndex ? 'w-4 bg-teal-600' : 'w-1.5 bg-slate-300'"
             />
         </div>
     </div>
 
-    <div v-else class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-10 text-center">
+    <div v-else class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 py-10 text-center">
         <ShoppingBag class="h-10 w-10 text-slate-400" />
         <div>
             <p class="text-sm font-medium text-slate-700">Tiada produk tersedia</p>
