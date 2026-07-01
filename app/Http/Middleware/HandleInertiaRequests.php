@@ -248,6 +248,7 @@ class HandleInertiaRequests extends Middleware
                     '/admin/form-submissions', '/admin/form-submissions/*',
                 ],
                 'children' => [
+                    ['label' => 'Senarai Borang', 'href' => route('admin.forms.index'), 'permission' => AccessControl::PERMISSION_VIEW_FORMS],
                     ['label' => 'Permohonan Borang', 'href' => route('admin.form-submissions.index'), 'permission' => AccessControl::PERMISSION_VIEW_FORM_SUBMISSIONS, 'badge' => $pendingForms],
                 ],
             ],
@@ -266,7 +267,9 @@ class HandleInertiaRequests extends Middleware
                 ],
             ],
             ['label' => 'Rujukan & Komisyen', 'href' => route('admin.referral-commissions.index'), 'permission' => AccessControl::PERMISSION_VIEW_REFERRAL_COMMISSIONS, 'icon' => 'Handshake'],
+            ['label' => 'Undian', 'href' => route('admin.surveys.index'), 'permission' => AccessControl::PERMISSION_MANAGE_SURVEYS, 'icon' => 'Vote'],
             ['label' => 'Aduan', 'href' => route('admin.complaints.index'), 'permission' => AccessControl::PERMISSION_VIEW_COMPLAINTS, 'icon' => 'MessagesSquare'],
+            ['label' => 'Pengumuman', 'href' => route('admin.announcements.index'), 'permission' => AccessControl::PERMISSION_VIEW_ANNOUNCEMENTS, 'icon' => 'Megaphone'],
             ['label' => 'Caruman Ahli', 'href' => route('admin.caruman.index'), 'permission' => AccessControl::PERMISSION_VIEW_CARUMAN, 'icon' => 'Wallet'],
             [
                 'label' => 'Pentadbiran',
@@ -326,7 +329,9 @@ class HandleInertiaRequests extends Middleware
                 ],
             ],
             ['label' => 'Aduan', 'href' => route('member.complaints.index'), 'permission' => AccessControl::PERMISSION_MEMBER_ACCESS, 'icon' => 'MessagesSquare'],
+            ['label' => 'Pengumuman', 'href' => route('member.announcements.index'), 'permission' => AccessControl::PERMISSION_MEMBER_ACCESS, 'icon' => 'Megaphone'],
             ['label' => 'Rujukan Saya', 'href' => route('member.referrals.index'), 'permission' => AccessControl::PERMISSION_MEMBER_ACCESS, 'icon' => 'Handshake'],
+            ['label' => 'Undian', 'href' => route('member.surveys.index'), 'permission' => AccessControl::PERMISSION_MEMBER_ACCESS, 'icon' => 'Vote'],
             ['label' => 'Caruman Saya', 'href' => route('member.caruman.index'), 'permission' => AccessControl::PERMISSION_MEMBER_ACCESS, 'icon' => 'Wallet'],
         ];
 

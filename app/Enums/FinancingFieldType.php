@@ -28,6 +28,7 @@ enum FinancingFieldType: string
     case AddressMy = 'address_my';
     case DigitalSignature = 'digital_signature';
     case MemberName = 'member_name';
+    case MemberAddress = 'member_address';
     case MemberIdentityNo = 'member_identity_no';
     case MemberDob = 'member_dob';
     case MemberPhone = 'member_phone';
@@ -74,6 +75,7 @@ enum FinancingFieldType: string
             self::AddressBeneficiary,
             self::DigitalSignature,
             self::MemberName,
+            self::MemberAddress,
             self::MemberIdentityNo,
             self::MemberDob,
             self::MemberPhone,
@@ -133,6 +135,7 @@ enum FinancingFieldType: string
             self::AddressMy => 'Alamat (Malaysia)',
             self::DigitalSignature => 'Tandatangan Digital',
             self::MemberName => 'Nama Penuh (Ahli)',
+            self::MemberAddress => 'Alamat Ahli (Auto Isi)',
             self::MemberIdentityNo => 'No. Kad Pengenalan (Ahli)',
             self::MemberDob => 'Tarikh Lahir (Ahli)',
             self::MemberPhone => 'No. Telefon (Ahli)',
@@ -161,7 +164,7 @@ enum FinancingFieldType: string
             self::IdentityNo, self::Number, self::Currency, self::Date,
             self::Select, self::Radio, self::Checkbox, self::YesNo,
             self::RepeaterTable, self::File, self::AddressMy, self::AddressSpouse, self::AddressBeneficiary, self::DigitalSignature,
-            self::MemberName, self::MemberIdentityNo, self::MemberDob,
+            self::MemberName, self::MemberAddress, self::MemberIdentityNo, self::MemberDob,
             self::MemberPhone, self::MemberEmail, self::MemberPosition,
             self::MemberEmployer, self::MemberMemberNo, self::MemberEmploymentNo,
             self::MemberBank, self::MemberBankAccount, self::MemberMaritalStatus,

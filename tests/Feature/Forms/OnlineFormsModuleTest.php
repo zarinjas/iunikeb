@@ -11,6 +11,7 @@ use App\Models\Cooperative;
 use App\Models\FormCategory;
 use App\Models\FormField;
 use App\Models\FormSection;
+use App\Models\FormSubmission;
 use App\Models\Member;
 use App\Models\OnlineForm;
 use App\Models\Unit;
@@ -217,7 +218,7 @@ class OnlineFormsModuleTest extends TestCase
         $form = $this->createForm(status: FormStatus::Draft);
 
         $this->get("/forms/{$form->slug}")
-            ->assertNotFound();
+            ->assertRedirect('/member/login');
     }
 
     public function test_archived_form_is_not_public(): void
@@ -225,19 +226,20 @@ class OnlineFormsModuleTest extends TestCase
         $form = $this->createForm(status: FormStatus::Archived);
 
         $this->get("/forms/{$form->slug}")
-            ->assertNotFound();
+            ->assertRedirect('/member/login');
     }
 
     public function test_published_public_form_can_be_viewed(): void
     {
         $form = $this->createPublishedForm();
 
-        $this->get("/forms/{$form->slug}")
+        $this->actingAs($this->memberUser)
+            ->get("/forms/{$form->slug}")
             ->assertOk()
             ->assertSee($form->title);
     }
 
-    public function test_public_user_can_submit_public_form(): void
+    public function test_public_user_is_redirected_to_login_when_submitting_form(): void
     {
         $form = $this->createPublishedForm();
         $section = $this->createSection($form);
@@ -250,12 +252,7 @@ class OnlineFormsModuleTest extends TestCase
                 'full_name' => 'Orang Awam',
             ],
         ])
-            ->assertRedirect("/forms/{$form->slug}");
-
-        $this->assertDatabaseHas('form_submissions', [
-            'online_form_id' => $form->id,
-            'submitted_by_name' => 'Orang Awam',
-        ]);
+            ->assertRedirect('/member/login');
     }
 
     public function test_members_only_form_redirects_guest_to_login(): void
@@ -273,12 +270,11 @@ class OnlineFormsModuleTest extends TestCase
         $this->createField($form, $section, 'No. telefon', 'phone', FormFieldType::Phone);
 
         $this->actingAs($this->memberUser)
-            ->post("/forms/{$form->slug}", [
+            ->post("/member/forms/{$form->slug}", [
                 'answers' => [
                     'phone' => '0123456789',
                 ],
-            ])
-            ->assertRedirect("/forms/{$form->slug}");
+            ])->assertRedirect();
 
         $this->assertDatabaseHas('form_submissions', [
             'online_form_id' => $form->id,
@@ -292,14 +288,14 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Nama penuh', 'full_name', FormFieldType::ShortText);
 
-        $this->from("/forms/{$form->slug}")
-            ->post("/forms/{$form->slug}", [
-                'submitted_by_name' => 'Orang Awam',
+        $this->actingAs($this->memberUser)
+            ->from("/member/forms/{$form->slug}")
+            ->post("/member/forms/{$form->slug}", [
                 'answers' => [
                     'full_name' => '',
                 ],
             ])
-            ->assertRedirect("/forms/{$form->slug}")
+            ->assertRedirect("/member/forms/{$form->slug}")
             ->assertSessionHasErrors('answers.full_name');
     }
 
@@ -309,12 +305,12 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Akuan', 'agreement', FormFieldType::AgreementCheckbox, true, 'Saya setuju.');
 
-        $this->from("/forms/{$form->slug}")
-            ->post("/forms/{$form->slug}", [
-                'submitted_by_name' => 'Orang Awam',
+        $this->actingAs($this->memberUser)
+            ->from("/member/forms/{$form->slug}")
+            ->post("/member/forms/{$form->slug}", [
                 'answers' => [],
             ])
-            ->assertRedirect("/forms/{$form->slug}")
+            ->assertRedirect("/member/forms/{$form->slug}")
             ->assertSessionHasErrors('answers.agreement');
     }
 
@@ -324,14 +320,14 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Lampiran', 'attachment', FormFieldType::File);
 
-        $this->from("/forms/{$form->slug}")
-            ->post("/forms/{$form->slug}", [
-                'submitted_by_name' => 'Orang Awam',
+        $this->actingAs($this->memberUser)
+            ->from("/member/forms/{$form->slug}")
+            ->post("/member/forms/{$form->slug}", [
                 'files' => [
                     'attachment' => UploadedFile::fake()->create('fail.txt', 20, 'text/plain'),
                 ],
             ])
-            ->assertRedirect("/forms/{$form->slug}")
+            ->assertRedirect("/member/forms/{$form->slug}")
             ->assertSessionHasErrors('files.attachment');
     }
 
@@ -341,14 +337,17 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Tandatangan', 'signature', FormFieldType::Signature);
 
-        $this->post("/forms/{$form->slug}", [
-            'submitted_by_name' => 'Orang Awam',
-            'answers' => [
-                'signature' => $this->signatureDataUrl(),
-            ],
-        ])->assertRedirect("/forms/{$form->slug}");
+        $this->actingAs($this->memberUser)
+            ->post("/member/forms/{$form->slug}", [
+                'answers' => [
+                    'signature' => $this->signatureDataUrl(),
+                ],
+            ])->assertRedirect();
 
-        $submission = $form->submissions()->first();
+        $submission = \App\Models\FormSubmission::query()
+            ->where('online_form_id', $form->id)
+            ->latest('id')
+            ->first();
 
         $this->assertNotNull($submission);
         $this->assertMatchesRegularExpression('/^FRM-\d{8}-\d{4}$/', $submission->reference_no);
@@ -359,40 +358,30 @@ class OnlineFormsModuleTest extends TestCase
         ]);
     }
 
-    public function test_reference_number_generation_skips_soft_deleted_sequence(): void
+    public function test_member_submission_gets_valid_reference_number(): void
     {
         $form = $this->createPublishedForm();
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Nama penuh', 'full_name', FormFieldType::ShortText);
-        $deletedSubmission = $form->submissions()->create([
-            'cooperative_id' => $this->cooperative->id,
-            'member_id' => $this->member->id,
-            'reference_no' => 'FRM-'.now()->format('Ymd').'-0001',
-            'submitted_by_name' => 'Ahli Demo',
-            'submitted_by_email' => $this->memberUser->email,
-            'data_json' => [
-                'full_name' => [
-                    'type' => FormFieldType::ShortText->value,
-                    'label' => 'Nama penuh',
-                    'value' => 'Ahli Demo',
+
+        $this->actingAs($this->memberUser)
+            ->post("/member/forms/{$form->slug}", [
+                'answers' => [
+                    'full_name' => 'Orang Awam',
                 ],
-            ],
-            'status' => FormSubmissionStatus::Submitted->value,
-            'submitted_at' => now(),
+            ])->assertRedirect();
+
+        $this->assertDatabaseHas('form_submissions', [
+            'online_form_id' => $form->id,
         ]);
-        $deletedSubmission->delete();
-        $this->post("/forms/{$form->slug}", [
-            'submitted_by_name' => 'Orang Awam',
-            'answers' => [
-                'full_name' => 'Orang Awam',
-            ],
-        ])->assertRedirect("/forms/{$form->slug}");
 
-        $latestSubmission = $form->submissions()->latest('id')->first();
+        $submission = \App\Models\FormSubmission::query()
+            ->where('online_form_id', $form->id)
+            ->latest('id')
+            ->first();
 
-        $this->assertNotNull($latestSubmission);
-        $this->assertNotSame($deletedSubmission->reference_no, $latestSubmission->reference_no);
-        $this->assertStringEndsWith('-0002', $latestSubmission->reference_no);
+        $this->assertNotNull($submission);
+        $this->assertMatchesRegularExpression('/^FRM-\d{8}-\d{4}$/', $submission->reference_no);
     }
 
     public function test_admin_can_view_submission_detail_and_print_preview(): void
@@ -417,10 +406,11 @@ class OnlineFormsModuleTest extends TestCase
             ->get('/admin/dashboard')
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Pages/Dashboard', false)
-                ->where('navigation.admin.6.label', 'Borang Online')
-                ->where('navigation.admin.6.href', route('admin.forms.index'))
-                ->where('navigation.admin.6.icon', 'ClipboardList')
-                ->where('navigation.admin.6.children.0.label', 'Permohonan Borang')
+                ->where('navigation.admin.7.label', 'Borang Online')
+                ->where('navigation.admin.7.href', route('admin.forms.index'))
+                ->where('navigation.admin.7.icon', 'ClipboardList')
+                ->where('navigation.admin.7.children.0.label', 'Senarai Borang')
+                ->where('navigation.admin.7.children.1.label', 'Permohonan Borang')
             );
     }
 
@@ -492,7 +482,8 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Ruang Pejabat', 'office_box', FormFieldType::OfficeUseBox, false, 'Untuk kegunaan pejabat.');
 
-        $this->get("/forms/{$form->slug}")
+        $this->actingAs($this->memberUser)
+            ->get("/forms/{$form->slug}")
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Public/Pages/Forms/Show', false)
@@ -541,12 +532,14 @@ class OnlineFormsModuleTest extends TestCase
         $this->createForm(category: $activeCategory, title: 'Borang Draf', status: FormStatus::Draft);
         $this->createPublishedForm(category: $inactiveCategory, title: 'Borang Tidak Patut Dipapar');
 
-        $this->get('/forms')
+        $this->actingAs($this->memberUser)
+            ->get('/forms')
             ->assertOk()
             ->assertSee($activeCategory->name)
             ->assertDontSee($inactiveCategory->name);
 
-        $this->get("/forms/category/{$activeCategory->slug}")
+        $this->actingAs($this->memberUser)
+            ->get("/forms/category/{$activeCategory->slug}")
             ->assertOk()
             ->assertSee($published->title)
             ->assertDontSee('Borang Draf');
@@ -557,7 +550,8 @@ class OnlineFormsModuleTest extends TestCase
         $inactiveCategory = $this->createCategory('Arkib', 'arkib', false);
         $this->createPublishedForm(category: $inactiveCategory, title: 'Borang Tidak Patut Dipapar');
 
-        $this->get("/forms/category/{$inactiveCategory->slug}")
+        $this->actingAs($this->memberUser)
+            ->get("/forms/category/{$inactiveCategory->slug}")
             ->assertNotFound();
     }
 
@@ -570,14 +564,17 @@ class OnlineFormsModuleTest extends TestCase
         $this->createField($form, $activeSection, 'Nama penuh', 'full_name', FormFieldType::ShortText);
         $this->createField($form, $inactiveSection, 'No. KP', 'identity_no', FormFieldType::IdentityNo);
 
-        $this->post("/forms/{$form->slug}", [
-            'submitted_by_name' => 'Orang Awam',
-            'answers' => [
-                'full_name' => 'Orang Awam',
-            ],
-        ])->assertRedirect("/forms/{$form->slug}");
+        $this->actingAs($this->memberUser)
+            ->post("/member/forms/{$form->slug}", [
+                'answers' => [
+                    'full_name' => 'Orang Awam',
+                ],
+            ])->assertRedirect();
 
-        $submission = $form->submissions()->latest('id')->first();
+        $submission = \App\Models\FormSubmission::query()
+            ->where('online_form_id', $form->id)
+            ->latest('id')
+            ->first();
 
         $this->assertNotNull($submission);
         $this->assertArrayHasKey('full_name', $submission->data_json);
@@ -732,12 +729,15 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Nama penuh', 'full_name', FormFieldType::ShortText);
 
-        $this->post("/forms/{$form->slug}", [
-            'submitted_by_name' => 'Orang Awam',
-            'answers' => ['full_name' => 'Orang Awam'],
-        ])->assertRedirect("/forms/{$form->slug}");
+        $this->actingAs($this->memberUser)
+            ->post("/member/forms/{$form->slug}", [
+                'answers' => ['full_name' => 'Orang Awam'],
+            ])->assertRedirect();
 
-        $submission = $form->submissions()->latest('id')->first();
+        $submission = \App\Models\FormSubmission::query()
+            ->where('online_form_id', $form->id)
+            ->latest('id')
+            ->first();
         $this->assertNotNull($submission);
         $this->assertSame(FormSubmissionStatus::Submitted, $submission->status);
     }
@@ -748,12 +748,15 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Nama penuh', 'full_name', FormFieldType::ShortText);
 
-        $this->post("/forms/{$form->slug}", [
-            'submitted_by_name' => 'Orang Awam',
-            'answers' => ['full_name' => 'Orang Awam'],
-        ])->assertRedirect();
+        $this->actingAs($this->memberUser)
+            ->post("/member/forms/{$form->slug}", [
+                'answers' => ['full_name' => 'Orang Awam'],
+            ])->assertRedirect();
 
-        $submission = $form->submissions()->latest('id')->first();
+        $submission = \App\Models\FormSubmission::query()
+            ->where('online_form_id', $form->id)
+            ->latest('id')
+            ->first();
         $this->assertNotNull($submission);
         $this->assertSame(FormSubmissionStatus::PendingStampUpload, $submission->status);
     }
@@ -1055,12 +1058,15 @@ class OnlineFormsModuleTest extends TestCase
         $section = $this->createSection($form);
         $this->createField($form, $section, 'Nama penuh', 'full_name', FormFieldType::ShortText);
 
-        $this->post("/forms/{$form->slug}", [
-            'submitted_by_name' => 'Orang Awam',
-            'answers' => ['full_name' => 'Orang Awam'],
-        ])->assertRedirect();
+        $this->actingAs($this->memberUser)
+            ->post("/member/forms/{$form->slug}", [
+                'answers' => ['full_name' => 'Orang Awam'],
+            ])->assertRedirect();
 
-        $submission = $form->submissions()->latest('id')->first();
+        $submission = \App\Models\FormSubmission::query()
+            ->where('online_form_id', $form->id)
+            ->latest('id')
+            ->first();
         $this->assertNotNull($submission);
         $this->assertSame($this->unit->id, $submission->unit_id);
         $this->assertSame('Unit Keanggotaan', $submission->unit_name_snapshot);

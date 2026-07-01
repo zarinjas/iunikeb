@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Member\ActivationController;
+use App\Http\Controllers\Member\AnnouncementController;
 use App\Http\Controllers\Member\ApplicationController;
 use App\Http\Controllers\Member\CardController;
 use App\Http\Controllers\Member\CarumanController as MemberCarumanController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Member\AnsuranApplicationController as MemberAnsuranApp
 use App\Http\Controllers\Member\AnsuranCatalogController as MemberAnsuranCatalogController;
 use App\Http\Controllers\Member\AnsuranGuarantorController as MemberAnsuranGuarantorController;
 use App\Http\Controllers\Member\ReferralController;
+use App\Http\Controllers\Member\SurveyController as MemberSurveyController;
 use App\Support\AccessControl;
 use Illuminate\Support\Facades\Route;
 
@@ -147,6 +149,14 @@ Route::prefix('member')->name('member.')->group(function (): void {
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('forms.index');
 
+        Route::get('/forms/{onlineForm:slug}', [MemberFormController::class, 'show'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('forms.show');
+
+        Route::post('/forms/{onlineForm:slug}', [MemberFormController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('forms.store');
+
         Route::get('/complaints', [ComplaintController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('complaints.index');
@@ -159,6 +169,13 @@ Route::prefix('member')->name('member.')->group(function (): void {
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('complaints.show');
+
+        Route::get('/announcements', [AnnouncementController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('announcements.index');
+        Route::get('/announcements/{announcement:slug}', [AnnouncementController::class, 'show'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('announcements.show');
 
         Route::get('/caruman', [MemberCarumanController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
@@ -232,6 +249,16 @@ Route::prefix('member')->name('member.')->group(function (): void {
         Route::get('/ansuran/member-search', [MemberAnsuranGuarantorController::class, 'memberSearch'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('ansuran.member-search');
+
+        Route::get('/surveys', [MemberSurveyController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('surveys.index');
+        Route::get('/surveys/{survey}', [MemberSurveyController::class, 'show'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('surveys.show');
+        Route::post('/surveys/{survey}/vote', [MemberSurveyController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('surveys.vote');
 
         Route::get('/notifications', [NotificationController::class, 'index'])
             ->middleware('auth')

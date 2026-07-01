@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Public\AnsuranCatalogController;
+use App\Http\Controllers\Public\AnnouncementController;
 use App\Http\Controllers\Public\MembershipApplicationController;
 use App\Http\Controllers\Public\FormDirectoryController;
 use App\Http\Controllers\Public\MemberVerificationController;
@@ -43,6 +44,9 @@ Route::get('/verify/member/{token}', [MemberVerificationController::class, 'show
 
 Route::get('/ansuran', [AnsuranCatalogController::class, 'index'])->name('public.ansuran.index');
 Route::get('/ansuran/{product:slug}', [AnsuranCatalogController::class, 'show'])->name('public.ansuran.show');
+
+Route::get('/pengumuman', [AnnouncementController::class, 'index'])->name('public.announcements.index');
+Route::get('/pengumuman/{slug}', [AnnouncementController::class, 'show'])->name('public.announcements.show');
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')

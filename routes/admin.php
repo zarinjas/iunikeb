@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AnsuranAgreementTemplateController;
 use App\Http\Controllers\Admin\AnsuranApplicationController;
 use App\Http\Controllers\Admin\AnsuranCategoryController;
@@ -41,6 +42,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\PosterController;
+use App\Http\Controllers\Admin\SurveyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Support\AccessControl;
 use Illuminate\Support\Facades\Route;
@@ -499,6 +501,41 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             ->middleware('permission:'.AccessControl::PERMISSION_REPLY_COMPLAINTS)
             ->name('complaints.reply');
 
+        // Announcements
+        Route::get('/announcements', [AnnouncementController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_VIEW_ANNOUNCEMENTS)
+            ->name('announcements.index');
+        Route::get('/announcements/create', [AnnouncementController::class, 'create'])
+            ->middleware('permission:'.AccessControl::PERMISSION_CREATE_ANNOUNCEMENTS)
+            ->name('announcements.create');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_CREATE_ANNOUNCEMENTS)
+            ->name('announcements.store');
+        Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])
+            ->middleware('permission:'.AccessControl::PERMISSION_VIEW_ANNOUNCEMENTS)
+            ->name('announcements.show');
+        Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])
+            ->middleware('permission:'.AccessControl::PERMISSION_EDIT_ANNOUNCEMENTS)
+            ->name('announcements.edit');
+        Route::match(['put', 'patch'], '/announcements/{announcement}', [AnnouncementController::class, 'update'])
+            ->middleware('permission:'.AccessControl::PERMISSION_EDIT_ANNOUNCEMENTS)
+            ->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])
+            ->middleware('permission:'.AccessControl::PERMISSION_DELETE_ANNOUNCEMENTS)
+            ->name('announcements.destroy');
+        Route::post('/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])
+            ->middleware('permission:'.AccessControl::PERMISSION_PUBLISH_ANNOUNCEMENTS)
+            ->name('announcements.publish');
+        Route::post('/announcements/{announcement}/unpublish', [AnnouncementController::class, 'unpublish'])
+            ->middleware('permission:'.AccessControl::PERMISSION_PUBLISH_ANNOUNCEMENTS)
+            ->name('announcements.unpublish');
+        Route::post('/announcements/{announcement}/toggle-pin', [AnnouncementController::class, 'togglePin'])
+            ->middleware('permission:'.AccessControl::PERMISSION_EDIT_ANNOUNCEMENTS)
+            ->name('announcements.toggle-pin');
+        Route::get('/announcements/{announcement}/read-stats', [AnnouncementController::class, 'readStats'])
+            ->middleware('permission:'.AccessControl::PERMISSION_VIEW_ANNOUNCEMENTS)
+            ->name('announcements.read-stats');
+
         // Caruman
         Route::get('/caruman', [CarumanController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_VIEW_CARUMAN)
@@ -555,6 +592,35 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/banners/reorder', [BannerController::class, 'reorder'])
             ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_BANNERS)
             ->name('banners.reorder');
+
+        // Surveys
+        Route::get('/surveys', [SurveyController::class, 'index'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.index');
+        Route::get('/surveys/create', [SurveyController::class, 'create'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.create');
+        Route::post('/surveys', [SurveyController::class, 'store'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.store');
+        Route::get('/surveys/{survey}/edit', [SurveyController::class, 'edit'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.edit');
+        Route::match(['put', 'patch'], '/surveys/{survey}', [SurveyController::class, 'update'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.update');
+        Route::get('/surveys/{survey}', [SurveyController::class, 'show'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.show');
+        Route::post('/surveys/{survey}/publish', [SurveyController::class, 'publish'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.publish');
+        Route::post('/surveys/{survey}/close', [SurveyController::class, 'close'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.close');
+        Route::delete('/surveys/{survey}', [SurveyController::class, 'destroy'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MANAGE_SURVEYS)
+            ->name('surveys.destroy');
 
         // Posters
         Route::get('/posters', [PosterController::class, 'index'])

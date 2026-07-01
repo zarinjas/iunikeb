@@ -31,10 +31,14 @@ class FormDirectoryController extends Controller
         private readonly MemberFormAutofillService $autofill,
     ) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
+        if (! $request->user()?->isMember()) {
+            return redirect()->route('member.login');
+        }
+
         $search = trim((string) $request->string('search'));
-        $isMember = $request->user()?->isMember() ?? false;
+        $isMember = true;
 
         $categories = FormCategory::query()
             ->where('cooperative_id', $this->activeCooperative()?->id)
@@ -72,13 +76,17 @@ class FormDirectoryController extends Controller
         ]);
     }
 
-    public function category(FormCategory $category, Request $request): Response
+    public function category(FormCategory $category, Request $request): Response|RedirectResponse
     {
+        if (! $request->user()?->isMember()) {
+            return redirect()->route('member.login');
+        }
+
         $this->ensureSameCooperative($category);
         abort_unless($category->is_active, 404);
 
         $search = trim((string) $request->string('search'));
-        $isMember = $request->user()?->isMember() ?? false;
+        $isMember = true;
 
         $forms = $category->forms()
             ->published()
@@ -102,12 +110,12 @@ class FormDirectoryController extends Controller
 
     public function show(OnlineForm $onlineForm): Response|RedirectResponse
     {
+        if (! request()->user()?->isMember()) {
+            return redirect()->route('member.login');
+        }
+
         $this->ensureSameCooperative($onlineForm);
         abort_if($onlineForm->status !== FormStatus::Published, 404);
-
-        if ($onlineForm->visibility === FormVisibility::MembersOnly && ! request()->user()?->isMember()) {
-            return redirect()->guest(route('member.login'));
-        }
 
         $onlineForm->load([
             'category',
@@ -171,6 +179,10 @@ class FormDirectoryController extends Controller
 
     public function store(StoreOnlineFormSubmissionRequest $request, OnlineForm $onlineForm): RedirectResponse
     {
+        if (! $request->user()?->isMember()) {
+            return redirect()->route('member.login');
+        }
+
         $this->ensureSameCooperative($onlineForm);
         abort_if($onlineForm->status !== FormStatus::Published, 404);
 
@@ -183,6 +195,11 @@ class FormDirectoryController extends Controller
         );
 
         session()->put("form_submission.{$submission->id}", true);
+
+        if ($request->user()?->isMember()) {
+            return redirect()->route('member.applications.submissions.show', $submission)
+                ->with('status', 'Borang anda berjaya dihantar. Rujukan: '.$submission->reference_no.'.');
+        }
 
         if ($onlineForm->submission_method === FormSubmissionMethod::RequiresStampedUpload) {
             return redirect()->route('public.forms.next-step', [$onlineForm->slug, $submission]);
@@ -203,6 +220,11 @@ class FormDirectoryController extends Controller
         abort_unless($submission->online_form_id === $onlineForm->id, 404);
         abort_unless($submission->status === FormSubmissionStatus::PendingStampUpload, 404);
         $this->authorizeSubmissionAccess($submission);
+
+        if (request()->user()?->isMember()) {
+            return redirect()->route('member.applications.submissions.show', $submission)
+                ->with('status', 'Borang berjaya dihantar. Sila muat naik borang bercop untuk melengkapkan permohonan.');
+        }
 
         $defaultInstruction = 'Borang ini perlu dicetak dan mendapatkan tandatangan serta cop pengesahan sebelum dimuat naik semula.';
 
@@ -235,9 +257,11 @@ class FormDirectoryController extends Controller
 
         $message = 'Borang bercop berjaya dimuat naik. Rujukan: '.$submission->reference_no.'. Pihak koperasi akan menyemak permohonan anda.';
 
-        return redirect()
-            ->route('public.forms.show', $onlineForm->slug)
-            ->with('status', $message);
+        $redirectRoute = $request->user()?->isMember()
+            ? route('member.applications.submissions.show', $submission)
+            : route('public.forms.show', $onlineForm->slug);
+
+        return redirect($redirectRoute)->with('status', $message);
     }
 
     public function printForSubmission(OnlineForm $onlineForm, FormSubmission $submission)
@@ -327,7 +351,7 @@ class FormDirectoryController extends Controller
             'category_name' => $form->category?->name,
             'visibility' => $form->visibility->value,
             'visibility_label' => $form->visibility === FormVisibility::MembersOnly ? 'Ahli sahaja' : 'Terbuka',
-            'url' => route('public.forms.show', $form->slug),
+            'url' => route('member.forms.show', $form->slug),
         ];
     }
 }

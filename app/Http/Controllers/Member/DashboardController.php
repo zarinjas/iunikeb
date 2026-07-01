@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Member;
 
 use App\Enums\FinancingApplicationStatus;
+use App\Enums\AnnouncementAudience;
+use App\Models\Announcement;
 use App\Models\AnsuranProduct;
 use App\Models\FinancingApplication;
 use App\Models\FormSubmission;
@@ -13,6 +15,7 @@ use App\Models\Banner;
 use App\Models\Poster;
 use App\Models\Program;
 use App\Models\ProgramRsvp;
+use App\Models\Survey;
 use App\Services\MemberCardService;
 use App\Services\Files\MemberPhotoStorageService;
 use Illuminate\Http\Request;
@@ -109,7 +112,29 @@ class DashboardController extends MemberPortalController
                 ->all()
             : [];
 
-        $announcements = [];
+        $announcements = Announcement::query()
+            ->forCooperative($cooperativeId)
+            ->published()
+            ->notExpired()
+            ->where(function ($query) {
+                $query->where('audience', AnnouncementAudience::Members->value)
+                    ->orWhere('audience', AnnouncementAudience::Public->value);
+            })
+            ->orderByRaw('is_pinned DESC, published_at DESC')
+            ->limit(5)
+            ->get()
+            ->map(fn (Announcement $a) => [
+                'id' => $a->id,
+                'title' => $a->title,
+                'slug' => $a->slug,
+                'summary' => $a->summary,
+                'priority' => $a->priority,
+                'is_pinned' => $a->is_pinned,
+                'audience' => $a->audience,
+                'published_at' => $a->published_at?->format('d/m/Y'),
+                'show_url' => route('member.announcements.show', ['announcement' => $a->slug]),
+            ])
+            ->all();
 
         $upcomingPrograms = Program::query()
             ->forCooperative($cooperativeId)
@@ -127,6 +152,27 @@ class DashboardController extends MemberPortalController
                 'start_time' => $program->start_date?->format('g:i A'),
                 'cover_image_url' => $program->cover_image_path ? Storage::disk('public')->url($program->cover_image_path) : null,
                 'user_rsvp' => $member ? $this->memberProgramRsvp($program->id, $member->id) : null,
+            ])
+            ->all();
+
+        $activeSurveys = Survey::query()
+            ->forCooperative($cooperativeId)
+            ->active()
+            ->with('options')
+            ->withCount('responses')
+            ->latest()
+            ->limit(3)
+            ->get()
+            ->map(fn (Survey $survey) => [
+                'id' => $survey->id,
+                'question' => $survey->question,
+                'total_responses' => $survey->responses_count,
+                'expires_at' => $survey->expires_at?->format('d/m/Y'),
+                'has_voted' => $member ? $survey->responses()->where('member_id', $member->id)->exists() : false,
+                'options' => $survey->options->sortBy('sort_order')->map(fn ($opt) => [
+                    'id' => $opt->id,
+                    'label' => $opt->label,
+                ]),
             ])
             ->all();
 
@@ -231,6 +277,7 @@ class DashboardController extends MemberPortalController
             'financingSummary' => $financingSummary,
             'ansuranProducts' => $ansuranProducts,
             'upcomingPrograms' => $upcomingPrograms,
+            'activeSurveys' => $activeSurveys,
         ]);
     }
 

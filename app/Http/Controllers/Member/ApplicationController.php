@@ -33,7 +33,7 @@ class ApplicationController extends MemberPortalController
                 'description' => $form->description,
                 'category_name' => $form->category?->name,
                 'submission_method' => $form->submission_method->value,
-                'url' => route('public.forms.show', $form->slug),
+                'url' => route('member.forms.show', $form->slug),
             ])
             ->all();
 

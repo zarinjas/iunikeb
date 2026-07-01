@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ArrowUpRight, Bell, Calculator, CalendarDays, ChevronRight, CircleAlert, CircleCheck, Clock, Eye, EyeOff, FileCheck, FileText, Gift, HandCoins, ImagePlay, Mail, MapPin, Megaphone, MessagesSquare, Phone, ScrollText, ShoppingBag, Star, UserRound, Wallet, X } from 'lucide-vue-next';
+import { ArrowUpRight, Calculator, CalendarDays, ChevronRight, CircleAlert, CircleCheck, CheckCircle2, Clock, Eye, EyeOff, FileCheck, FileText, Gift, HandCoins, ImagePlay, Mail, MapPin, Megaphone, MessagesSquare, Phone, Pin, ScrollText, ShoppingBag, UserRound, Vote, Wallet, X, Zap } from 'lucide-vue-next';
 import { computed, ref, onMounted } from 'vue';
 import QRCode from 'qrcode';
 import MemberLayout from '@/Member/Layouts/MemberLayout.vue';
@@ -32,6 +32,7 @@ const props = defineProps({
     posters: { type: Array, default: () => [] },
     banners: { type: Array, default: () => [] },
     upcomingPrograms: { type: Array, default: () => [] },
+    activeSurveys: { type: Array, default: () => [] },
 });
 
 const page = usePage();
@@ -99,11 +100,6 @@ const actionIcon = (name) => {
     return map[name] ?? UserRound;
 };
 
-const announcementIcon = (idx) => {
-    const list = [Megaphone, Bell, FileText, Star];
-    return list[idx % list.length];
-};
-
 const showReferral = ref(true);
 const closeReferral = () => { showReferral.value = false; };
 
@@ -111,6 +107,24 @@ const showOnboardingBanner = ref(true);
 const closeOnboardingBanner = () => { showOnboardingBanner.value = false; };
 
 const scannerOpen = ref(false);
+
+const selectedOptionId = ref({});
+const voting = ref({});
+
+const voteFromDashboard = (surveyId) => {
+    const optionId = selectedOptionId.value[surveyId];
+    if (!optionId) return;
+    voting.value[surveyId] = true;
+    router.post(`/member/surveys/${surveyId}/vote`, {
+        survey_option_id: optionId,
+    }, {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => {
+            voting.value[surveyId] = false;
+        },
+    });
+};
 
 const handleQrScan = (decodedText) => {
     const programMatch = decodedText.match(/\/member\/programs\/(\d+)/);
@@ -565,11 +579,11 @@ onMounted(async () => {
             </section>
 
             <!-- Announcements Feed -->
-            <section class="rounded-2xl bg-gradient-to-br from-indigo-50/30 via-white to-purple-50/20 shadow-sm ring-1 ring-indigo-100/30">
+            <section class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
                 <div class="p-5">
                     <div class="mb-4 flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 text-white shadow-sm">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
                                 <Megaphone class="h-[18px] w-[18px]" />
                             </span>
                             <p class="text-sm font-semibold text-slate-900">Pengumuman</p>
@@ -584,31 +598,138 @@ onMounted(async () => {
                         </Link>
                     </div>
 
-                    <div v-if="latestAnnouncements.length" class="space-y-1">
+                    <div v-if="latestAnnouncements.length" class="space-y-2">
                         <div
-                            v-for="(item, idx) in latestAnnouncements.slice(0, 3)"
+                            v-for="item in latestAnnouncements"
                             :key="item.id"
-                            class="flex gap-3 rounded-xl bg-white px-4 py-3 shadow-xs ring-1 ring-slate-100 transition hover:shadow-sm"
                         >
-                            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
-                                <component :is="announcementIcon(idx)" class="h-4 w-4" />
+                            <Link
+                                :href="item.show_url"
+                                class="flex gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-50"
+                                :class="{
+                                    'bg-amber-50/40': item.priority === 'penting',
+                                    'bg-red-50/40': item.priority === 'segera',
+                                }"
+                            >
+                                <span
+                                    class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                    :class="{
+                                        'bg-teal-50 text-teal-500': item.priority === 'normal',
+                                        'bg-amber-100 text-amber-600': item.priority === 'penting',
+                                        'bg-red-100 text-red-600': item.priority === 'segera',
+                                    }"
+                                >
+                                    <Zap v-if="item.priority === 'segera' || item.priority === 'penting'" class="h-4 w-4" />
+                                    <Megaphone v-else class="h-4 w-4" />
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
+                                        <span
+                                            v-if="item.priority === 'segera'"
+                                            class="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600"
+                                        >Segera</span>
+                                        <span
+                                            v-else-if="item.priority === 'penting'"
+                                            class="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600"
+                                        >Penting</span>
+                                        <Pin v-if="item.is_pinned" class="h-3 w-3 shrink-0 text-amber-400" />
+                                    </div>
+                                    <p v-if="item.summary" class="mt-0.5 line-clamp-1 text-xs text-slate-400">{{ item.summary }}</p>
+                                    <p class="mt-1 text-[11px] text-slate-400">{{ item.published_at || '-' }}</p>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                    <EmptyState
+                        v-else
+                        class="mt-3"
+                        title="Tiada pengumuman baharu"
+                        description="Pengumuman terkini akan dipaparkan di sini."
+                        compact
+                    />
+                </div>
+            </section>
+
+            <!-- Survey / Undian Aktif -->
+            <section class="rounded-2xl bg-gradient-to-br from-violet-50/30 via-white to-purple-50/20 shadow-sm ring-1 ring-violet-100/30">
+                <div class="p-5">
+                    <div class="mb-4 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 text-white shadow-sm">
+                                <Vote class="h-[18px] w-[18px]" />
                             </span>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium text-slate-900">{{ item.title }}</p>
-                                <p v-if="item.summary" class="mt-0.5 line-clamp-1 text-xs text-slate-400">{{ item.summary }}</p>
-                                <div class="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
-                                    <span>{{ item.published_at || '-' }}</span>
-                                    <span v-if="item.audience === 'members'" class="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500">Ahli</span>
+                            <p class="text-sm font-semibold text-slate-900">Undian Aktif</p>
+                        </div>
+                        <Link
+                            v-if="activeSurveys.length"
+                            href="/member/surveys"
+                            class="inline-flex items-center gap-0.5 text-xs font-medium text-teal-600 hover:text-teal-700"
+                        >
+                            Semua
+                            <ChevronRight class="h-3.5 w-3.5" />
+                        </Link>
+                    </div>
+
+                    <div v-if="activeSurveys.length" class="space-y-2">
+                        <div
+                            v-for="survey in activeSurveys"
+                            :key="survey.id"
+                            class="rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-xs transition hover:shadow-sm"
+                        >
+                            <div class="flex items-start gap-3">
+                                <span
+                                    class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                    :class="survey.has_voted ? 'bg-emerald-50 text-emerald-500' : 'bg-violet-50 text-violet-500'"
+                                >
+                                    <component :is="survey.has_voted ? CheckCircle2 : Vote" class="h-4 w-4" />
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-medium text-slate-900">{{ survey.question }}</p>
+                                    <div class="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+                                        <span>{{ survey.total_responses }} undian</span>
+                                        <span v-if="survey.expires_at">· Tamat {{ survey.expires_at }}</span>
+                                    </div>
+
+                                    <div v-if="!survey.has_voted" class="mt-2 space-y-1.5">
+                                        <label
+                                            v-for="option in survey.options"
+                                            :key="option.id"
+                                            class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs transition"
+                                            :class="selectedOptionId[survey.id] === option.id ? 'border-violet-400 bg-violet-50' : 'border-slate-200 hover:border-slate-300'"
+                                        >
+                                            <input
+                                                type="radio"
+                                                :name="'survey_' + survey.id"
+                                                :value="option.id"
+                                                class="h-3.5 w-3.5 border-slate-300 text-violet-600 focus:ring-violet-200"
+                                                @change="selectedOptionId[survey.id] = option.id"
+                                            />
+                                            {{ option.label }}
+                                        </label>
+                                        <button
+                                            type="button"
+                                            class="mt-2 w-full rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:brightness-105 disabled:opacity-50"
+                                            :disabled="!selectedOptionId[survey.id] || voting[survey.id]"
+                                            @click="voteFromDashboard(survey.id)"
+                                        >
+                                            {{ voting[survey.id] ? 'Menghantar...' : 'Hantar Undian' }}
+                                        </button>
+                                    </div>
+                                    <div v-else class="mt-2 flex items-center gap-1.5 text-[11px] text-emerald-600">
+                                        <CheckCircle2 class="h-3.5 w-3.5" />
+                                        Anda telah mengundi
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <EmptyState
-                    v-else
-                    class="mt-3"
-                    title="Tiada pengumuman"
-                    description="Pengumuman terkini akan dipaparkan di sini."
-                    compact
+                        v-else
+                        class="mt-3"
+                        title="Tiada undian aktif"
+                        description="Undian terkini akan dipaparkan di sini."
+                        compact
                     />
                 </div>
             </section>

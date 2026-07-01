@@ -23,7 +23,7 @@ const settings = computed(() => parseSettings(props.field));
 const fileUrl = computed(() => getFieldFileUrl(props.field));
 
 const isAddressType = computed(() =>
-  ['address_my', 'address_spouse', 'address_beneficiary'].includes(props.field.type)
+  ['address_my', 'member_address', 'address_spouse', 'address_beneficiary'].includes(props.field.type)
 );
 
 const isContent = computed(() =>

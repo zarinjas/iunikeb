@@ -134,7 +134,7 @@ class StoreOnlineFormSubmissionRequest extends FormRequest
             }
         }
 
-        if ($form->visibility === FormVisibility::Public) {
+        if ($form->visibility === FormVisibility::Public && ! $this->user()?->isMember()) {
             $rules['submitted_by_name'] = ['required', 'string', 'max:255'];
             $rules['submitted_by_email'] = ['nullable', 'email', 'max:255'];
         } else {

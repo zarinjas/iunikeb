@@ -130,6 +130,18 @@ class AccessControl
 
     public const PERMISSION_MANAGE_MEMBER_POPUP = 'manage_member_popup';
 
+    public const PERMISSION_MANAGE_SURVEYS = 'manage_surveys';
+
+    public const PERMISSION_VIEW_ANNOUNCEMENTS = 'view_announcements';
+
+    public const PERMISSION_CREATE_ANNOUNCEMENTS = 'create_announcements';
+
+    public const PERMISSION_EDIT_ANNOUNCEMENTS = 'edit_announcements';
+
+    public const PERMISSION_DELETE_ANNOUNCEMENTS = 'delete_announcements';
+
+    public const PERMISSION_PUBLISH_ANNOUNCEMENTS = 'publish_announcements';
+
     public static function roles(): array
     {
         return [
@@ -202,6 +214,12 @@ class AccessControl
             self::PERMISSION_MANAGE_BANNERS,
             self::PERMISSION_MANAGE_POSTERS,
             self::PERMISSION_MANAGE_MEMBER_POPUP,
+            self::PERMISSION_MANAGE_SURVEYS,
+            self::PERMISSION_VIEW_ANNOUNCEMENTS,
+            self::PERMISSION_CREATE_ANNOUNCEMENTS,
+            self::PERMISSION_EDIT_ANNOUNCEMENTS,
+            self::PERMISSION_DELETE_ANNOUNCEMENTS,
+            self::PERMISSION_PUBLISH_ANNOUNCEMENTS,
         ];
     }
 
@@ -267,6 +285,12 @@ class AccessControl
                 self::PERMISSION_MANAGE_BANNERS,
                 self::PERMISSION_MANAGE_POSTERS,
                 self::PERMISSION_MANAGE_MEMBER_POPUP,
+                self::PERMISSION_MANAGE_SURVEYS,
+                self::PERMISSION_VIEW_ANNOUNCEMENTS,
+                self::PERMISSION_CREATE_ANNOUNCEMENTS,
+                self::PERMISSION_EDIT_ANNOUNCEMENTS,
+                self::PERMISSION_DELETE_ANNOUNCEMENTS,
+                self::PERMISSION_PUBLISH_ANNOUNCEMENTS,
             ],
             self::ROLE_MEMBER => [
                 self::PERMISSION_MEMBER_ACCESS,

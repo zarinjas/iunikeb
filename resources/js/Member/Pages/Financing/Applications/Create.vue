@@ -49,7 +49,7 @@ const { tryFill, isAutofilled } = useAutofill(props);
 const contentTypes = new Set(['rich_text', 'image', 'pdf_document', 'note', 'instruction_text', 'document_checklist', 'signature_block']);
 const isContent = (type) => contentTypes.has(type);
 
-const isAddressType = (type) => ['address_my', 'address_spouse', 'address_beneficiary'].includes(type);
+const isAddressType = (type) => ['address_my', 'member_address', 'address_spouse', 'address_beneficiary'].includes(type);
 
 const getAddressValue = (field) => ({
   line1: fieldAnswers.value[field.field_key + '_line1'] || '',
@@ -115,7 +115,7 @@ watch(() => selectedProduct.value?.sections, (sections) => {
                 continue;
             }
 
-            if (field.type === 'address_my') {
+            if (field.type === 'address_my' || field.type === 'member_address') {
                 fieldAnswers.value[field.field_key + '_line1'] = props.autofillData?.address_line_1 || props.member?.address_line_1 || '';
                 fieldAnswers.value[field.field_key + '_line2'] = props.autofillData?.address_line_2 || props.member?.address_line_2 || '';
                 fieldAnswers.value[field.field_key + '_postcode'] = props.autofillData?.postcode || props.member?.postcode || '';
