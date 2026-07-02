@@ -29,7 +29,11 @@ class DashboardController extends Controller
 
         if (! $cooperative) {
             return Inertia::render('Admin/Pages/Dashboard', [
+                'actionRequired' => ['total' => 0, 'items' => []],
                 'stats' => [],
+                'recentApplications' => [],
+                'recentComplaints' => [],
+                'recentActivities' => [],
                 'charts' => [
                     'submissionsByStatus' => ['labels' => [], 'data' => [], 'colors' => []],
                     'submissionsByUnit' => ['labels' => [], 'data' => []],
@@ -43,26 +47,126 @@ class DashboardController extends Controller
 
         $membersTotal = Member::query()->where('cooperative_id', $cooperativeId)->count();
         $membersActive = Member::query()->where('cooperative_id', $cooperativeId)->where('membership_status', MemberStatus::Active->value)->count();
+        $membersThisMonth = Member::query()->where('cooperative_id', $cooperativeId)->where('joined_at', '>=', now()->startOfMonth())->count();
+        
         $submissionsTotal = FormSubmission::query()->where('cooperative_id', $cooperativeId)->count();
         $submissionsPending = FormSubmission::query()->where('cooperative_id', $cooperativeId)->whereIn('status', [
             FormSubmissionStatus::PendingStampUpload->value,
             FormSubmissionStatus::Submitted->value,
             FormSubmissionStatus::UnderReview->value,
         ])->count();
+        
         $complaintsTotal = Complaint::query()->where('cooperative_id', $cooperativeId)->count();
         $complaintsOpen = Complaint::query()->where('cooperative_id', $cooperativeId)->whereIn('status', [
             ComplaintStatus::Open->value,
             ComplaintStatus::InProgress->value,
         ])->count();
+        
         $membershipPending = MembershipApplication::query()->forCooperative($cooperativeId)
             ->whereIn('status', [
                 MembershipApplicationStatus::Pending->value,
                 MembershipApplicationStatus::UnderReview->value,
             ])->count();
+            
         $financingPending = FinancingApplication::query()->where('cooperative_id', $cooperativeId)
             ->whereIn('status', array_map(fn ($s) => $s->value, FinancingApplicationStatus::active()))->count();
 
         $totalPending = $membershipPending + $submissionsPending + $financingPending;
+
+        $actionRequired = [
+            'total' => $totalPending + $complaintsOpen,
+            'items' => [],
+        ];
+        if ($membershipPending > 0) $actionRequired['items'][] = "$membershipPending Permohonan Keahlian menanti kelulusan.";
+        if ($submissionsPending > 0) $actionRequired['items'][] = "$submissionsPending Permohonan Borang menanti kelulusan.";
+        if ($financingPending > 0) $actionRequired['items'][] = "$financingPending Permohonan Pembiayaan menanti kelulusan.";
+        if ($complaintsOpen > 0) $actionRequired['items'][] = "$complaintsOpen Aduan belum diselesaikan.";
+
+        $recentMemberships = MembershipApplication::query()
+            ->forCooperative($cooperativeId)
+            ->whereIn('status', [MembershipApplicationStatus::Pending->value, MembershipApplicationStatus::UnderReview->value])
+            ->latest('created_at')
+            ->take(5)
+            ->get()
+            ->map(fn($app) => [
+                'id' => $app->id,
+                'name' => $app->full_name,
+                'type' => 'Keahlian',
+                'status' => $app->status->label(),
+                'raw_date' => $app->submitted_at ?? $app->created_at,
+                'url' => route('admin.membership-applications.show', $app->id)
+            ]);
+
+        $recentSubmissions = FormSubmission::query()
+            ->with(['member', 'form'])
+            ->where('cooperative_id', $cooperativeId)
+            ->whereIn('status', [FormSubmissionStatus::Submitted->value, FormSubmissionStatus::UnderReview->value, FormSubmissionStatus::PendingStampUpload->value])
+            ->latest('created_at')
+            ->take(5)
+            ->get()
+            ->map(fn($sub) => [
+                'id' => $sub->id,
+                'name' => $sub->member?->full_name ?? $sub->submitted_by_name ?? 'Ahli',
+                'type' => 'Borang: ' . ($sub->form?->name ?? 'Umum'),
+                'status' => $sub->status->label(),
+                'raw_date' => $sub->submitted_at ?? $sub->created_at,
+                'url' => route('admin.form-submissions.show', $sub->id)
+            ]);
+            
+        $recentFinancings = FinancingApplication::query()
+            ->with('member')
+            ->where('cooperative_id', $cooperativeId)
+            ->whereIn('status', array_map(fn ($s) => $s->value, FinancingApplicationStatus::active()))
+            ->latest('created_at')
+            ->take(5)
+            ->get()
+            ->map(fn($fin) => [
+                'id' => $fin->id,
+                'name' => $fin->member?->full_name ?? 'Ahli',
+                'type' => 'Pembiayaan',
+                'status' => $fin->status->label(),
+                'raw_date' => $fin->created_at,
+                'url' => route('admin.financing.applications.show', $fin->id)
+            ]);
+
+        $recentApplications = $recentMemberships->concat($recentSubmissions)->concat($recentFinancings)
+            ->sortByDesc('raw_date')
+            ->take(5)
+            ->map(function ($item) {
+                $item['date'] = $item['raw_date']->diffForHumans();
+                unset($item['raw_date']);
+                return $item;
+            })
+            ->values();
+
+        $recentComplaints = Complaint::query()
+            ->with('member')
+            ->where('cooperative_id', $cooperativeId)
+            ->whereIn('status', [ComplaintStatus::Open->value, ComplaintStatus::InProgress->value])
+            ->latest('created_at')
+            ->take(5)
+            ->get()
+            ->map(fn($c) => [
+                'id' => $c->id,
+                'ticket_no' => $c->ticket_no,
+                'subject' => $c->subject,
+                'status' => $c->status->label(),
+                'date' => $c->created_at->diffForHumans(),
+                'url' => route('admin.complaints.show', $c->id)
+            ]);
+
+        $recentActivities = \App\Models\AuditLog::query()
+            ->with('actor')
+            ->where('cooperative_id', $cooperativeId)
+            ->latest('created_at')
+            ->take(8)
+            ->get()
+            ->map(fn($log) => [
+                'id' => $log->id,
+                'actor' => $log->actor?->name ?? 'Sistem',
+                'action' => $log->action,
+                'date' => $log->created_at->diffForHumans(),
+            ]);
 
         $submissionsByStatus = $this->submissionsByStatus($cooperativeId);
         $submissionsByUnit = $this->submissionsByUnit($cooperativeId);
@@ -70,52 +174,56 @@ class DashboardController extends Controller
         $complaintsByStatus = $this->complaintsByStatus($cooperativeId);
 
         return Inertia::render('Admin/Pages/Dashboard', [
+            'actionRequired' => $actionRequired,
+            'recentApplications' => $recentApplications,
+            'recentComplaints' => $recentComplaints,
+            'recentActivities' => $recentActivities,
             'stats' => [
                 [
                     'label' => 'Menunggu Tindakan',
                     'value' => $totalPending,
                     'suffix' => 'perlu semakan',
-                    'description' => 'Jumlah semua permohonan yang menunggu tindakan admin.',
+                    'description' => 'Jumlah permohonan yang menunggu.',
                     'icon' => 'FileCheck',
                     'tone' => 'danger',
                 ],
                 [
                     'label' => 'Jumlah Ahli',
                     'value' => $membersTotal,
-                    'suffix' => 'aktif: '.$membersActive,
-                    'description' => 'Keseluruhan rekod keahlian.',
+                    'suffix' => '+'.$membersThisMonth.' bulan ini',
+                    'description' => 'Keseluruhan rekod keahlian (Aktif: '.$membersActive.').',
                     'icon' => 'Users',
                     'tone' => 'info',
                 ],
                 [
                     'label' => 'Permohonan Keahlian',
                     'value' => $membershipPending,
-                    'suffix' => 'menunggu',
-                    'description' => 'Permohonan keahlian baharu yang belum diproses.',
+                    'suffix' => 'menunggu kelulusan',
+                    'description' => 'Keahlian baharu yang belum diproses.',
                     'icon' => 'ClipboardCheck',
                     'tone' => 'warning',
                 ],
                 [
                     'label' => 'Permohonan Borang',
-                    'value' => $submissionsTotal,
-                    'suffix' => 'belum selesai: '.$submissionsPending,
-                    'description' => 'Jumlah keseluruhan permohonan borang.',
+                    'value' => $submissionsPending,
+                    'suffix' => 'daripada '.$submissionsTotal.' keseluruhan',
+                    'description' => 'Borang online menunggu semakan.',
                     'icon' => 'FileCheck',
                     'tone' => 'warning',
                 ],
                 [
                     'label' => 'Permohonan Pembiayaan',
                     'value' => $financingPending,
-                    'suffix' => 'menunggu',
-                    'description' => 'Permohonan pembiayaan yang sedang dalam proses.',
+                    'suffix' => 'menunggu kelulusan',
+                    'description' => 'Pembiayaan dalam proses.',
                     'icon' => 'HandCoins',
                     'tone' => 'warning',
                 ],
                 [
                     'label' => 'Aduan & Cadangan',
-                    'value' => $complaintsTotal,
-                    'suffix' => 'terbuka: '.$complaintsOpen,
-                    'description' => 'Tiket aduan dan cadangan ahli.',
+                    'value' => $complaintsOpen,
+                    'suffix' => 'daripada '.$complaintsTotal.' keseluruhan',
+                    'description' => 'Tiket yang perlu diselesaikan.',
                     'icon' => 'MessagesSquare',
                     'tone' => 'danger',
                 ],

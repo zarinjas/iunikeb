@@ -1,6 +1,6 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
-import { Eye, EyeOff, Banknote } from 'lucide-vue-next';
+import { Eye, EyeOff, Banknote, Printer } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import MemberLayout from '@/Member/Layouts/MemberLayout.vue';
 import DecorativeBlobs from '@/Shared/Components/DecorativeBlobs.vue';
@@ -31,6 +31,10 @@ const switchYear = (year) => {
     const params = new URLSearchParams(window.location.search);
     params.set('year', year);
     window.location.search = params.toString();
+};
+
+const printStatement = () => {
+    window.open(`/member/caruman/statement?year=${props.selectedYear}`, '_blank');
 };
 
 const totalDisplay = computed(() => {
@@ -132,6 +136,18 @@ const totalDisplay = computed(() => {
                                     {{ totalDisplay }}
                                 </p>
                             </div>
+                        </div>
+
+                        <div class="mt-4 flex justify-end">
+                            <Button
+                                variant="default"
+                                size="sm"
+                                class="gap-2"
+                                @click="printStatement"
+                            >
+                                <Printer class="h-4 w-4" />
+                                Cetak Penyata
+                            </Button>
                         </div>
                     </div>
                 </section>

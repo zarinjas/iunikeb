@@ -14,4 +14,15 @@ enum MembershipApplicationStatus: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Pending => 'Menunggu',
+            self::UnderReview => 'Dalam Proses',
+            self::Approved => 'Diluluskan',
+            self::Rejected => 'Ditolak',
+            self::Cancelled => 'Dibatalkan',
+        };
+    }
 }

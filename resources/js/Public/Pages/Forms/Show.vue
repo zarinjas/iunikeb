@@ -18,7 +18,7 @@ const props = defineProps({
     autofillData: { type: Object, default: () => ({}) },
 });
 
-const { tryFill, isAutofilled, autofillData } = useAutofill(props);
+const { tryFill, isAutofilled, autofillData, autofilledFields } = useAutofill(props);
 
 const MY_STATES = [
     'Johor', 'Kedah', 'Kelantan', 'Melaka', 'Negeri Sembilan',

@@ -184,6 +184,10 @@ Route::prefix('member')->name('member.')->group(function (): void {
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('caruman.index');
 
+        Route::get('/caruman/statement', [MemberCarumanController::class, 'statement'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('caruman.statement');
+
         Route::get('/programs', [MemberProgramController::class, 'index'])
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('programs.index');
