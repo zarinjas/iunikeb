@@ -17,6 +17,34 @@
             } catch (\Throwable) {
                 $faviconUrl = null;
             }
+
+            $popupData = null;
+            try {
+                $user = auth()->user();
+                if ($user && $user->role === 'member' && !session('popup_dismissed')) {
+                    $cooperative = app(\App\Services\Settings\SettingsService::class)->activeCooperative();
+                    if ($cooperative) {
+                        $section = \App\Models\FrontpageSection::query()
+                            ->where('cooperative_id', $cooperative->id)
+                            ->where('key', 'member_popup')
+                            ->where('is_active', true)
+                            ->with('items')
+                            ->first();
+                        if ($section && $section->items->isNotEmpty()) {
+                            $item = $section->items->first();
+                            $popupData = [
+                                'image_url' => $item->imageUrl(),
+                                'title' => $item->title,
+                                'content' => $item->description,
+                                'button_text' => $item->button_text,
+                                'button_url' => $item->button_url,
+                            ];
+                        }
+                    }
+                }
+            } catch (\Throwable) {
+                $popupData = null;
+            }
         @endphp
 
         @if($faviconUrl)
@@ -30,6 +58,10 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Portal Ahli">
         <meta name="mobile-web-app-capable" content="yes">
+
+        @if($popupData)
+            <script>window.__popup = @json($popupData);</script>
+        @endif
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @inertiaHead

@@ -17,6 +17,11 @@ onMounted(() => {
         popup.value = page.props.popup;
         return;
     }
+    if (window.__popup) {
+        popup.value = window.__popup;
+        delete window.__popup;
+        return;
+    }
     fetch('/member/popup', { headers: { 'Accept': 'application/json' } })
         .then(r => r.ok ? r.json() : null)
         .then(d => { if (d && Object.keys(d).length) popup.value = d; })
