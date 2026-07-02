@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Building2, Calculator, CalendarCheck, CalendarDays, ChevronDown, CreditCard, FileCheck, FileText, Files, HandCoins, Home, ImagePlay, LogOut, Megaphone, Menu, MessagesSquare, ShoppingCart, Wallet, UserRound, X } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import BottomTabBar from '@/Shared/Components/BottomTabBar.vue';
 import KoperasiAIChat from '@/Member/Components/KoperasiAIChat.vue';
 import MemberPopup from '@/Shared/Components/MemberPopup.vue';
@@ -10,6 +10,19 @@ import NotificationBell from '@/Shared/Components/NotificationBell.vue';
 import { Button } from '@/Shared/Components/ui/button';
 
 const page = usePage();
+const popup = ref(null);
+
+onMounted(() => {
+    if (page.props.popup) {
+        popup.value = page.props.popup;
+        return;
+    }
+    fetch('/member/popup', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d && Object.keys(d).length) popup.value = d; })
+        .catch(() => {});
+});
+
 const sidebarOpen = ref(false);
 const user = computed(() => page.props.auth?.user);
 const navItems = computed(() => page.props.navigation?.member ?? []);
@@ -125,7 +138,7 @@ const logout = () => {
         <link rel="icon" :href="faviconUrl || '/favicon.ico'" />
     </Head>
 
-    <MemberPopup v-if="page.props.popup" :popup="page.props.popup" />
+    <MemberPopup v-if="popup" :popup="popup" />
 
     <div class="relative min-h-screen overflow-x-hidden bg-gradient-to-b from-blue-100/40 via-white to-sky-100/25 text-slate-950">
         <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-y-auto border-r border-slate-200 bg-white lg:block">

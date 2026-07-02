@@ -15,6 +15,7 @@ use App\Http\Controllers\Member\Financing\FinancingGeneratedDocumentController;
 use App\Http\Controllers\Member\FinancingGuarantorController;
 use App\Http\Controllers\Member\NotificationController;
 use App\Http\Controllers\Member\PasswordResetController;
+use App\Http\Controllers\Member\PopupController;
 use App\Http\Controllers\Member\PopupDismissController;
 use App\Http\Controllers\Member\ProgramController as MemberProgramController;
 use App\Http\Controllers\Member\ProfileController;
@@ -219,6 +220,9 @@ Route::prefix('member')->name('member.')->group(function (): void {
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('koperasi-ai-chat');
 
+        Route::get('/popup', [PopupController::class, 'show'])
+            ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
+            ->name('popup.show');
         Route::post('/popup/dismiss', PopupDismissController::class)
             ->middleware('permission:'.AccessControl::PERMISSION_MEMBER_ACCESS)
             ->name('popup.dismiss');
