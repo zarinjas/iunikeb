@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ImagePlus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import AdminLayout from '@/Admin/Layouts/AdminLayout.vue';
@@ -8,7 +8,6 @@ import FormSection from '@/Shared/Components/FormSection.vue';
 import SelectInput from '@/Shared/Components/Form/SelectInput.vue';
 import TextInput from '@/Shared/Components/Form/TextInput.vue';
 import TextareaInput from '@/Shared/Components/Form/TextareaInput.vue';
-import ToggleSwitch from '@/Shared/Components/Form/ToggleSwitch.vue';
 import PageHeader from '@/Shared/Components/PageHeader.vue';
 import { Button } from '@/Shared/Components/ui/button';
 
@@ -23,9 +22,8 @@ const props = defineProps({
 const page = usePage();
 const statusMessage = computed(() => page.props.flash?.status);
 const isEdit = computed(() => props.mode === 'edit');
-const isSubmitting = ref(false);
 
-const form = ref({
+const form = useForm({
     title: props.program?.title || '',
     slug: props.program?.slug || '',
     description: props.program?.description || '',
@@ -39,45 +37,31 @@ const form = ref({
     registration_deadline: props.program?.registration_deadline || '',
     status: props.program?.status || 'draft',
     is_featured: props.program?.is_featured || false,
+    cover_image: null,
+    _method: props.mode === 'edit' ? 'put' : undefined,
 });
 
-const errors = ref({});
 const coverImagePreview = ref(props.program?.cover_image_url || null);
-const coverImageFile = ref(null);
 
 const handleCoverUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    coverImageFile.value = file;
+    form.cover_image = file;
     const reader = new FileReader();
     reader.onload = (ev) => { coverImagePreview.value = ev.target?.result; };
     reader.readAsDataURL(file);
 };
 
 const submit = () => {
-    isSubmitting.value = true;
-    errors.value = {};
-
     const url = isEdit.value ? `/admin/programs/${props.program.id}` : '/admin/programs';
 
-    const payload = {
-        ...form.value,
-        capacity: form.value.capacity ? Number(form.value.capacity) : '',
-        cover_image: coverImageFile.value || undefined,
-    };
-
-    if (isEdit.value) {
-        payload._method = 'put';
-    }
-
-    router.post(url, payload, {
+    form.post(url, {
         preserveScroll: true,
-        onError: (errs) => {
-            errors.value = errs;
-            isSubmitting.value = false;
-        },
-        onFinish: () => { isSubmitting.value = false; },
     });
+};
+
+const cancel = () => {
+    router.get('/admin/programs');
 };
 </script>
 
@@ -103,27 +87,27 @@ const submit = () => {
 
             <form @submit.prevent="submit">
                 <FormSection title="Maklumat Asas">
-                    <TextInput id="title" v-model="form.title" label="Tajuk Program" :error="errors.title" placeholder="Contoh: Mesyuarat Agung Tahunan 2026" required class="md:col-span-2" />
+                    <TextInput id="title" v-model="form.title" label="Tajuk Program" :error="form.errors.title" placeholder="Contoh: Mesyuarat Agung Tahunan 2026" required class="md:col-span-2" />
 
-                    <SelectInput id="category" v-model="form.category" label="Kategori" :options="categoryOptions" :error="errors.category" />
+                    <SelectInput id="category" v-model="form.category" label="Kategori" :options="categoryOptions" :error="form.errors.category" />
 
-                    <SelectInput id="program_type" v-model="form.program_type" label="Jenis Program" :options="programTypeOptions" :error="errors.program_type" required />
+                    <SelectInput id="program_type" v-model="form.program_type" label="Jenis Program" :options="programTypeOptions" :error="form.errors.program_type" required />
 
-                    <TextInput id="location" v-model="form.location" label="Lokasi" :error="errors.location" placeholder="Dewan Serbaguna Koperasi" />
+                    <TextInput id="location" v-model="form.location" label="Lokasi" :error="form.errors.location" placeholder="Dewan Serbaguna Koperasi" />
 
-                    <TextInput id="online_url" v-model="form.online_url" label="Pautan Atas Talian" :error="errors.online_url" placeholder="https://zoom.us/j/..." />
+                    <TextInput id="online_url" v-model="form.online_url" label="Pautan Atas Talian" :error="form.errors.online_url" placeholder="https://zoom.us/j/..." />
 
-                    <TextareaInput id="description" v-model="form.description" label="Penerangan" :error="errors.description" placeholder="Terangkan program ini..." class="md:col-span-2" rows="5" />
+                    <TextareaInput id="description" v-model="form.description" label="Penerangan" :error="form.errors.description" placeholder="Terangkan program ini..." class="md:col-span-2" rows="5" />
                 </FormSection>
 
                 <FormSection title="Tarikh & Kapasiti">
-                    <TextInput id="start_date" v-model="form.start_date" label="Tarikh Mula" type="datetime-local" :error="errors.start_date" required />
+                    <TextInput id="start_date" v-model="form.start_date" label="Tarikh Mula" type="datetime-local" :error="form.errors.start_date" required />
 
-                    <TextInput id="end_date" v-model="form.end_date" label="Tarikh Tamat" type="datetime-local" :error="errors.end_date" />
+                    <TextInput id="end_date" v-model="form.end_date" label="Tarikh Tamat" type="datetime-local" :error="form.errors.end_date" />
 
-                    <TextInput id="registration_deadline" v-model="form.registration_deadline" label="Tamat Pendaftaran" type="datetime-local" :error="errors.registration_deadline" />
+                    <TextInput id="registration_deadline" v-model="form.registration_deadline" label="Tamat Pendaftaran" type="datetime-local" :error="form.errors.registration_deadline" />
 
-                    <TextInput id="capacity" v-model="form.capacity" label="Kapasiti" type="number" :error="errors.capacity" placeholder="100" />
+                    <TextInput id="capacity" v-model="form.capacity" label="Kapasiti" type="number" :error="form.errors.capacity" placeholder="100" />
                 </FormSection>
 
                 <FormSection title="Imej & Status">
@@ -137,10 +121,10 @@ const submit = () => {
                             </div>
                             <input id="cover_image" type="file" accept="image/*" class="w-full rounded-lg border border-slate-300 p-2 text-sm" @change="handleCoverUpload" />
                         </div>
-                        <p v-if="errors.cover_image" class="text-sm text-red-600">{{ errors.cover_image }}</p>
+                        <p v-if="form.errors.cover_image" class="text-sm text-red-600">{{ form.errors.cover_image }}</p>
                     </div>
 
-                    <SelectInput id="status" v-model="form.status" label="Status" :options="statusOptions" :error="errors.status" required />
+                    <SelectInput id="status" v-model="form.status" label="Status" :options="statusOptions" :error="form.errors.status" required />
 
                     <div class="flex items-center gap-3">
                         <input id="is_featured" v-model="form.is_featured" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-teal-700" />
@@ -148,12 +132,11 @@ const submit = () => {
                     </div>
                 </FormSection>
 
-                <FormActions>
-                    <Button type="button" variant="outline" :as="Link" href="/admin/programs">Batal</Button>
-                    <Button type="submit" :disabled="isSubmitting">
-                        {{ isEdit ? 'Simpan Perubahan' : 'Cipta Program' }}
-                    </Button>
-                </FormActions>
+                <FormActions
+                    :submit-label="isEdit ? 'Simpan Perubahan' : 'Cipta Program'"
+                    :submitting="form.processing"
+                    @cancel="cancel"
+                />
             </form>
         </section>
     </AdminLayout>

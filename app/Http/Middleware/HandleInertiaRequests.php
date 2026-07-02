@@ -146,7 +146,6 @@ class HandleInertiaRequests extends Middleware
                     'button_url' => $item->button_url,
                 ];
 
-                return $result;
             },
         ];
     }
