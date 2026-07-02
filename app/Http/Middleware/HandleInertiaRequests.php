@@ -17,6 +17,7 @@ use App\Services\Files\MemberPhotoStorageService;
 use App\Services\Settings\SettingsService;
 use App\Support\AccessControl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -121,22 +122,49 @@ class HandleInertiaRequests extends Middleware
             },
             'popup' => function () use ($request): ?array {
                 $user = $request->user();
-                if (! $user || $user->role !== 'member') return null;
-                if ($request->session()->get('popup_dismissed')) return null;
+                if (! $user) {
+                    Log::info('POPUP_DEBUG: user null');
+                    return null;
+                }
+                if ($user->role !== 'member') {
+                    Log::info('POPUP_DEBUG: bukan member', ['role' => $user->role, 'user_id' => $user->id]);
+                    return null;
+                }
+                if ($request->session()->get('popup_dismissed')) {
+                    Log::info('POPUP_DEBUG: popup_dismissed dalam session');
+                    return null;
+                }
 
-                $cooperativeId = app(SettingsService::class)->activeCooperative()?->id;
-                if (! $cooperativeId) return null;
+                $cooperative = app(SettingsService::class)->activeCooperative();
+                if (! $cooperative) {
+                    Log::info('POPUP_DEBUG: activeCooperative null');
+                    return null;
+                }
+                $cooperativeId = $cooperative->id;
 
                 $section = FrontpageSection::query()
                     ->where('cooperative_id', $cooperativeId)
                     ->where('key', 'member_popup')
-                    ->active()
-                    ->with('items')
                     ->first();
 
-                if (! $section || $section->items->isEmpty()) return null;
+                if (! $section) {
+                    Log::info('POPUP_DEBUG: section tak wujud', ['coop_id' => $cooperativeId]);
+                    return null;
+                }
+                if (! $section->is_active) {
+                    Log::info('POPUP_DEBUG: section is_active=false', ['section_id' => $section->id]);
+                    return null;
+                }
+
+                $section->load('items');
+                if ($section->items->isEmpty()) {
+                    $allCount = $section->allItems()->count();
+                    Log::info('POPUP_DEBUG: items kosong', ['section_id' => $section->id, 'all_items' => $allCount]);
+                    return null;
+                }
 
                 $item = $section->items->first();
+                Log::info('POPUP_DEBUG: OK semua pass', ['item_id' => $item->id]);
 
                 return [
                     'image_url' => $item->imageUrl(),
@@ -145,7 +173,6 @@ class HandleInertiaRequests extends Middleware
                     'button_text' => $item->button_text,
                     'button_url' => $item->button_url,
                 ];
-
             },
         ];
     }
